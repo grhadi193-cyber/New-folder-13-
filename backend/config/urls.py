@@ -35,21 +35,23 @@ def health_check(request):
 def serve_media(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.isfile(file_path):
-        return FileResponse(open(file_path, "rb"))
+        response = FileResponse(open(file_path, "rb"))
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
     raise Http404
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health", health_check),
-    path("api/",   api.urls),
-    re_path(r"^public/media/(?P<path>.+)$", serve_media),
+    path("api/", api.urls),
+    # serve media in both dev and production
+    re_path(r"^media/(?P<path>.+)$", serve_media),
 ]
 
 if settings.DEBUG:
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     urlpatterns += staticfiles_urlpatterns()
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     try:
         from django.urls import include
         import debug_toolbar
