@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Send, Loader2, CheckCircle } from 'lucide-react'
+import { submitContact } from '@/lib/api/django'
 
 const schema = z.object({
   name: z.string().min(2, 'نام حداقل ۲ کاراکتر باشد'),
@@ -34,14 +35,19 @@ export default function ContactForm() {
 
   async function onSubmit(values: FormValues) {
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1200))
-    setLoading(false)
-    form.reset()
-    setSent(true)
-    toast.success('پیام شما با موفقیت ارسال شد', {
-      description: 'کارشناسان ما در اسرع وقت با شما تماس خواهند گرفت.',
-    })
-    setTimeout(() => setSent(false), 3000)
+    try {
+      await submitContact(values)
+      form.reset()
+      setSent(true)
+      toast.success('پیام شما با موفقیت ارسال شد', {
+        description: 'کارشناسان ما در اسرع وقت با شما تماس خواهند گرفت.',
+      })
+      setTimeout(() => setSent(false), 3000)
+    } catch {
+      toast.error('خطا در ارسال پیام. لطفاً دوباره تلاش کنید.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

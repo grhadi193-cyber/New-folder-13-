@@ -58,6 +58,9 @@ class ProductListOut(BaseModel):
     price: Decimal
     discount_price: Optional[Decimal] = None
     weight: Decimal = Decimal("0")
+    length: Decimal = Decimal("0")
+    width: Decimal = Decimal("0")
+    height: Decimal = Decimal("0")
     stock: int
     image: Optional[str] = None
     category: Optional[CategoryOut] = None
@@ -67,7 +70,6 @@ class ProductListOut(BaseModel):
     @field_validator('image', mode='before')
     @classmethod
     def convert_image_to_str(cls, v):
-        """تبدیل ImageFieldFile به رشته یا None"""
         if v is None or v == '':
             return None
         if hasattr(v, 'url'):
@@ -77,14 +79,24 @@ class ProductListOut(BaseModel):
     @computed_field
     @property
     def effective_price(self) -> Decimal:
-        """The price the customer actually pays — discount_price if set, else price."""
         return self.discount_price if self.discount_price is not None else self.price
 
     @computed_field
     @property
     def is_on_sale(self) -> bool:
-        """True when a discount is actively applied."""
         return self.discount_price is not None and self.discount_price < self.price
+
+    @computed_field
+    @property
+    def volumetric_weight(self) -> float:
+        if self.length and self.width and self.height:
+            return float(self.length * self.width * self.height) / 5000.0
+        return 0.0
+
+    @computed_field
+    @property
+    def effective_shipping_weight(self) -> float:
+        return max(float(self.weight), self.volumetric_weight)
 
 
 # ── Product Detail (public) ───────────────────────────────────────────────────
@@ -102,6 +114,9 @@ class ProductDetailOut(BaseModel):
     view_count: int = 0
     stock: int
     weight: Decimal
+    length: Decimal = Decimal("0")
+    width: Decimal = Decimal("0")
+    height: Decimal = Decimal("0")
     image: Optional[str] = None
     category: Optional[CategoryOut] = None
     images: List[ProductImageOut] = []
@@ -111,7 +126,6 @@ class ProductDetailOut(BaseModel):
     @field_validator('image', mode='before')
     @classmethod
     def convert_image_to_str(cls, v):
-        """تبدیل ImageFieldFile به رشته یا None"""
         if v is None or v == '':
             return None
         if hasattr(v, 'url'):
@@ -121,7 +135,6 @@ class ProductDetailOut(BaseModel):
     @field_validator('images', mode='before')
     @classmethod
     def convert_images_to_list(cls, v):
-        """تبدیل RelatedManager به لیست"""
         if hasattr(v, 'all'):
             return list(v.all())
         return v if isinstance(v, list) else []
@@ -129,13 +142,24 @@ class ProductDetailOut(BaseModel):
     @computed_field
     @property
     def effective_price(self) -> Decimal:
-        """The price the customer actually pays."""
         return self.discount_price if self.discount_price is not None else self.price
 
     @computed_field
     @property
     def is_on_sale(self) -> bool:
         return self.discount_price is not None and self.discount_price < self.price
+
+    @computed_field
+    @property
+    def volumetric_weight(self) -> float:
+        if self.length and self.width and self.height:
+            return float(self.length * self.width * self.height) / 5000.0
+        return 0.0
+
+    @computed_field
+    @property
+    def effective_shipping_weight(self) -> float:
+        return max(float(self.weight), self.volumetric_weight)
 
 
 # ── Order (Create) ────────────────────────────────────────────────────────────

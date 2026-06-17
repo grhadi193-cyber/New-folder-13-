@@ -41,8 +41,8 @@ from pydantic import BaseModel
 
 from accounts.models import User
 from core.auth import AdminBearer
-from core.exceptions import AppException, NotFoundError
-from store.models import Order, OrderStatusHistory, Product
+from core.exceptions import AppException
+from store.models import Order, Product
 from store.schemas import UserOrderOut
 
 logger = logging.getLogger(__name__)
@@ -696,6 +696,7 @@ class AdminSiteSettingsOut(BaseModel):
     announcement:     str
     primary_color:    str
     maintenance_mode: bool
+    shop_enabled:     bool
     social_instagram: str
     social_telegram:  str
     support_phone:    str
@@ -714,6 +715,7 @@ class AdminSiteSettingsUpdateIn(BaseModel):
     announcement:     Optional[str]  = None
     primary_color:    Optional[str]  = None
     maintenance_mode: Optional[bool] = None
+    shop_enabled:     Optional[bool] = None
     social_instagram: Optional[str]  = None
     social_telegram:  Optional[str]  = None
     support_phone:    Optional[str]  = None
@@ -737,6 +739,7 @@ def _settings_to_out(s, request) -> AdminSiteSettingsOut:
         announcement     = s.announcement,
         primary_color    = s.primary_color,
         maintenance_mode = s.maintenance_mode,
+        shop_enabled     = s.shop_enabled,
         social_instagram = s.social_instagram,
         social_telegram  = s.social_telegram,
         support_phone    = s.support_phone,
@@ -776,7 +779,7 @@ def admin_update_settings(request, payload: AdminSiteSettingsUpdateIn):
 
     updatable_fields = [
         "site_name", "banner_text", "announcement", "primary_color",
-        "maintenance_mode", "social_instagram", "social_telegram",
+        "maintenance_mode", "shop_enabled", "social_instagram", "social_telegram",
         "support_phone", "hero_title", "hero_text", "about_us",
     ]
     update_fields = []

@@ -64,6 +64,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.phone_number
 
+    def get_full_name(self):
+        return self.full_name or self.phone_number
+
+    def get_short_name(self):
+        return self.full_name.split()[0] if self.full_name else self.phone_number
+
     def clean(self):
         super().clean()
         if self.national_id:

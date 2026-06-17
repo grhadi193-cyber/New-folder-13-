@@ -1,0 +1,55 @@
+# Runflare Configuration for ATi Farzam GPS Tracker
+# Documentation: https://runflare.com/docs/get-started/
+
+project:
+  name: ati-farzam
+  description: ATi Farzam Iranian GPS Tracker Shop
+
+services:
+  # Backend Service (Django)
+  - name: backend
+    type: django
+    path: ./backend
+    build:
+      command: |
+        pip install -r requirements.txt
+        python manage.py collectstatic --noinput
+    start:
+      command: /entrypoint.sh
+    ports:
+      - 8000
+    env:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+    disk:
+      - name: media
+        path: /app/media
+        size: 5GB
+      - name: static
+        path: /app/staticfiles
+        size: 1GB
+
+  # Frontend Service (Next.js)
+  - name: frontend
+    type: nextjs
+    path: ./frontend
+    build:
+      command: |
+        npm install
+        npm run build
+    start:
+      command: npm start
+    ports:
+      - 3000
+
+databases:
+  - name: postgres
+    type: postgres
+    version: "16"
+    size: 5GB
+
+cron:
+  # Run migrations on deploy
+  - name: migrate
+    command: python manage.py migrate --noinput
+    service: backend
+    trigger: on_deploy

@@ -8,6 +8,7 @@ class SiteSettings(models.Model):
     announcement     = models.TextField(blank=True)
     primary_color    = models.CharField(max_length=7, default="#01696f")
     maintenance_mode = models.BooleanField(default=False)
+    shop_enabled     = models.BooleanField(default=True, verbose_name="فروشگاه فعال")
     social_instagram = models.URLField(blank=True)
     social_telegram  = models.URLField(blank=True)
     support_phone    = models.CharField(max_length=20, blank=True)
@@ -107,3 +108,19 @@ class Page(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ContactMessage(models.Model):
+    name       = models.CharField(max_length=128, verbose_name="نام")
+    phone      = models.CharField(max_length=15, verbose_name="شماره موبایل")
+    message    = models.TextField(verbose_name="پیام")
+    is_read    = models.BooleanField(default=False, verbose_name="خوانده شده")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ارسال")
+
+    class Meta:
+        verbose_name        = "پیام تماس"
+        verbose_name_plural = "پیام‌های تماس"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} — {self.phone}"

@@ -1,0 +1,57 @@
+# Runflare Ignore File
+# Files and directories listed here will not be deployed
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Node modules
+node_modules
+.next
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv
+.venv
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+DEPLOY_RUNFLARE.md
+*.md
+
+# Runflare config
+runflare.json
+runflare.yaml
+deploy-runflare.sh
+
+# Media (will be stored on disk)
+media

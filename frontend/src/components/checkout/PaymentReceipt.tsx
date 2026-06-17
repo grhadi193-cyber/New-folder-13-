@@ -29,17 +29,19 @@ export default function PaymentReceipt({ status, orderId, token }: PaymentReceip
   const [fetchError, setFetchError] = useState(false)
   const clearCart = useCartStore((s) => s.clearCart)
   const cartCleared = useRef(false)
+  // Only show paid state if URL says paid AND backend confirms it
   const isPaid = status === 'paid'
+  const isVerified = isPaid && order && order.status === 'paid'
 
-  // Clear cart once when payment is confirmed
+  // Clear cart once when payment is verified by backend
   useEffect(() => {
-    if (isPaid && !cartCleared.current) {
+    if (isPaid && order && order.status === 'paid' && !cartCleared.current) {
       cartCleared.current = true
       clearCart()
       sessionStorage.removeItem('last_order_id')
       sessionStorage.removeItem('last_order_items')
     }
-  }, [isPaid, clearCart])
+  }, [isPaid, order, clearCart])
 
   // Save receipt to localStorage for later viewing
   useEffect(() => {
@@ -64,7 +66,7 @@ export default function PaymentReceipt({ status, orderId, token }: PaymentReceip
     }, 10000)
 
     setLoading(true)
-    getOrder(token, orderId)
+    getOrder(token, orderId, controller.signal)
       .then((data) => {
         setOrder(data)
         setFetchError(false)
@@ -193,11 +195,11 @@ export default function PaymentReceipt({ status, orderId, token }: PaymentReceip
                   </div>
                 </div>
 
-                {/* Transaction ID */}
-                {order?.transaction_id && (
+                {/* Tracking Number */}
+                {order?.tracking_number && (
                   <div className="flex items-center justify-between text-xs bg-bg-secondary rounded-lg px-3 py-2">
-                    <span className="text-text-tertiary">شناسه تراکنش</span>
-                    <span className="font-mono text-text-primary" dir="ltr">{order.transaction_id}</span>
+                    <span className="text-text-tertiary">شماره پیگیری</span>
+                    <span className="font-mono text-text-primary" dir="ltr">{order.tracking_number}</span>
                   </div>
                 )}
 
@@ -248,20 +250,9 @@ export default function PaymentReceipt({ status, orderId, token }: PaymentReceip
                         </p>
                         {order.items.map((item: any, idx: number) => (
                           <div key={idx} className="flex items-center gap-3 py-1.5">
-                            {item.product?.image && (
-                              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-bg-secondary flex-shrink-0">
-                                <Image
-                                  src={item.product.image}
-                                  alt={item.product?.name ?? ''}
-                                  fill
-                                  className="object-contain p-0.5"
-                                  sizes="40px"
-                                />
-                              </div>
-                            )}
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium text-text-primary line-clamp-1">
-                                {item.product?.name ?? item.name}
+                                {item.product_name ?? item.product?.name ?? 'محصول'}
                               </p>
                               <p className="text-text-tertiary text-[10px]">× {item.quantity}</p>
                             </div>
@@ -276,7 +267,7 @@ export default function PaymentReceipt({ status, orderId, token }: PaymentReceip
                     <Separator />
 
                     {/* Shipping Address */}
-                    {order.address && (
+                    {order.shipping_address_snapshot && (
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
                           <MapPin className="w-4 h-4 text-text-tertiary" />
@@ -284,54 +275,44 @@ export default function PaymentReceipt({ status, orderId, token }: PaymentReceip
                         <div>
                           <p className="text-[10px] text-text-tertiary mb-0.5">آدرس تحویل</p>
                           <p className="text-xs text-text-secondary leading-relaxed">
-                            {order.address.province?.name || order.address.province} — {order.address.city?.name || order.address.city} — {order.address.street}
+                            {order.shipping_address_snapshot.province} — {order.shipping_address_snapshot.city} — {order.shipping_address_snapshot.street}
                           </p>
-                          {order.address.postal_code && (
+                          {order.shipping_address_snapshot.postal_code && (
                             <p className="text-[10px] text-text-tertiary mt-0.5" dir="ltr">
-                              کد پستی: {order.address.postal_code}
+                              کد پستی: {order.shipping_address_snapshot.postal_code}
                             </p>
                           )}
                         </div>
                       </div>
                     )}
 
-                    {/* Shipping Method */}
-                    {order.shipping_method && (
+                    {/* Status History */}
+                    {order.history?.length > 0 && (
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Truck className="w-4 h-4 text-text-tertiary" />
+                          <Clock className="w-4 h-4 text-text-tertiary" />
                         </div>
                         <div>
-                          <p className="text-[10px] text-text-tertiary mb-0.5">روش ارسال</p>
-                          <p className="text-xs text-text-secondary">{order.shipping_method.name}</p>
-                          <p className="text-[10px] text-text-tertiary mt-0.5">تحویل ۲ تا ۵ روز کاری</p>
+                          <p className="text-[10px] text-text-tertiary mb-1">وضعیت سفارش</p>
+                          {order.history.map((h: any, idx: number) => (
+                            <p key={idx} className="text-xs text-text-secondary">
+                              {h.status_display} — {h.note}
+                            </p>
+                          ))}
                         </div>
                       </div>
                     )}
 
-                    {/* Customer Info */}
-                    {order.user && (
-                      <div className="flex items-center gap-3 bg-bg-secondary rounded-lg px-3 py-2">
-                        <div className="w-8 h-8 rounded-full bg-navy/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-navy">
-                            {(order.user.full_name || order.user.phone_number || '?').charAt(0)}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-text-primary">
-                            {order.user.full_name || 'کاربر'}
-                          </p>
-                          <p className="text-[10px] text-text-tertiary" dir="ltr">
-                            {order.user.phone_number}
-                          </p>
-                        </div>
+                    {/* Shipping Cost */}
+                    {order.shipping_cost > 0 && (
+                      <div className="flex justify-between text-xs text-text-secondary">
+                        <span>هزینه ارسال</span>
+                        <span dir="ltr">{formatPrice(order.shipping_cost)}</span>
                       </div>
                     )}
-
-                    <Separator />
 
                     {/* Total */}
-                    <div className="flex justify-between font-bold text-text-primary">
+                    <div className="flex justify-between font-bold text-text-primary border-t border-slate-100 pt-3 mt-1">
                       <span className="text-sm">جمع کل پرداخت‌شده</span>
                       <span className="text-lg text-teal-600" dir="ltr">
                         {formatPrice(order.total_price)}

@@ -11,10 +11,10 @@ from .models import (
 
 @admin.register(Province)
 class ProvinceAdmin(admin.ModelAdmin):
-    list_display = ["name", "code", "is_active"]
+    list_display = ["name", "code", "zone_number", "is_active"]
     search_fields = ["name"]
-    list_filter = ["is_active"]
-    list_editable = ["is_active"]
+    list_filter = ["is_active", "zone_number"]
+    list_editable = ["is_active", "zone_number"]
 
 
 @admin.register(City)
@@ -39,14 +39,13 @@ class ShippingZoneAdmin(admin.ModelAdmin):
 @admin.register(ShippingMethod)
 class ShippingMethodAdmin(admin.ModelAdmin):
     list_display = (
-        "name", "slug", "carrier_name", "zone", "base_cost", "cost_per_kg",
-        "free_above", "min_days", "max_days", "is_active",
+        "name", "slug", "method_type", "carrier_name", "base_cost", "cost_per_kg",
+        "fixed_price", "free_above", "min_days", "max_days", "is_active",
     )
-    list_editable = ("is_active", "base_cost", "cost_per_kg")
-    list_filter = ("is_active", "zone")
+    list_editable = ("is_active", "base_cost", "cost_per_kg", "fixed_price")
+    list_filter = ("is_active", "method_type")
     search_fields = ("name", "slug", "carrier_name")
     prepopulated_fields = {"slug": ("name",)}
-    raw_id_fields = ("zone",)
 
 
 @admin.register(ShippingRate)

@@ -16,6 +16,7 @@ class SiteSettingsOut(BaseModel):
     announcement:     str
     primary_color:    str
     maintenance_mode: bool
+    shop_enabled:     bool
     social_instagram: str
     social_telegram:  str
     support_phone:    str
@@ -84,10 +85,6 @@ class PageOut(BaseModel):
 # Endpoints
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.get("/health", summary="Health check")
-def health(request):
-    return {"status": "ok"}
-
 
 @router.get("/settings", response=SiteSettingsOut, summary="تنظیمات عمومی سایت")
 def get_site_settings(request):
@@ -108,6 +105,7 @@ def get_site_settings(request):
         announcement     = s.announcement,
         primary_color    = s.primary_color,
         maintenance_mode = s.maintenance_mode,
+        shop_enabled     = s.shop_enabled,
         social_instagram = s.social_instagram,
         social_telegram  = s.social_telegram,
         support_phone    = s.support_phone,
@@ -191,3 +189,35 @@ def get_page(request, slug: str):
         return PageOut(id=page.pk, title=page.title, slug=page.slug, content=page.content)
     except Page.DoesNotExist:
         return JsonResponse({"error": "not_found"}, status=404)
+
+
+# ── Contact Form ─────────────────────────────────────────────────────────────
+
+class ContactIn(BaseModel):
+    name:    str
+    phone:   str
+    message: str
+
+
+class ContactOut(BaseModel):
+    detail: str
+
+
+@router.post("/contact", response=ContactOut, auth=None, summary="ارسال پیام تماس")
+def submit_contact(request, payload: ContactIn):
+    from core.models import ContactMessage
+    from django.http import JsonResponse
+
+    if len(payload.name) < 2:
+        return JsonResponse({"error": True, "message": "نام حداقل ۲ کاراکتر باشد"}, status=400)
+    if len(payload.phone) < 10:
+        return JsonResponse({"error": True, "message": "شماره موبایل نامعتبر است"}, status=400)
+    if len(payload.message) < 10:
+        return JsonResponse({"error": True, "message": "پیام حداقل ۱۰ کاراکتر باشد"}, status=400)
+
+    ContactMessage.objects.create(
+        name=payload.name,
+        phone=payload.phone,
+        message=payload.message,
+    )
+    return ContactOut(detail="پیام شما با موفقیت ارسال شد")

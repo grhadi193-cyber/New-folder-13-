@@ -147,13 +147,19 @@ def create_order(user, address_id: int, shipping_method_id: int, items: list) ->
 
         effective_price = _get_effective_price(product)
         order_items_raw.append((product.pk, quantity, effective_price, float(product.weight)))
-        total_weight += float(product.weight) * quantity
+        total_weight += product.effective_shipping_weight * quantity
 
     # محاسبه قیمت کل سفارش (قبل از atomic)
     total = sum(price * qty for _, qty, price, _ in order_items_raw)
 
-    # محاسبه هزینه ارسال با وزن و قیمت واقعی
-    shipping_cost = calculate_shipping_cost(method, total_weight, total)
+    # محاسبه هزینه ارسال با وزن، قیمت واقعی و آدرس (استان/شهر)
+    shipping_cost = calculate_shipping_cost(
+        method,
+        total_weight=total_weight,
+        order_total=total,
+        province_name=address.province,
+        city_name=address.city,
+    )
 
     shipping_address_snapshot = {
         "province":    address.province,

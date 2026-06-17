@@ -106,7 +106,7 @@ export default function CheckoutPage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-[#1e3a5f]">تکمیل سفارش</h1>
           <div className="flex items-center gap-2">
-            <SignalStrength bars={step === 1 ? 1 : step === 2 ? 2 : step === 3 ? 3 : 4} activeColor="#10b981" />
+            <SignalStrength bars={step === 1 ? 1 : step === 2 ? 2 : 3} activeColor="#10b981" />
             <span className="text-xs text-gray-400">مرحله {step} از ۳</span>
           </div>
         </div>
@@ -135,6 +135,7 @@ export default function CheckoutPage() {
               {step === 2 && selectedAddressId && (
                 <ShippingStep
                   addressId={selectedAddressId}
+                  address={selectedAddress}
                   selectedMethodId={selectedShippingMethod?.id ?? null}
                   onSelect={(method) => setSelectedShippingMethod(method)}
                   onNext={() => setStep(3)}
@@ -172,7 +173,9 @@ export default function CheckoutPage() {
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-500">هزینه ارسال</span>
                     <span className="text-[#10b981] font-semibold">
-                      {new Intl.NumberFormat('fa-IR').format(selectedShippingMethod.price)} تومان
+                      {selectedShippingMethod.cost === 0
+                        ? 'رایگان'
+                        : `${new Intl.NumberFormat('fa-IR').format(selectedShippingMethod.cost)} تومان`}
                     </span>
                   </div>
                 </>
@@ -182,7 +185,7 @@ export default function CheckoutPage() {
                 <span className="text-[#1e3a5f]">جمع کل</span>
                 <span className="text-[#1e3a5f]">
                   {new Intl.NumberFormat('fa-IR').format(
-                    items.reduce((s, i) => s + i.price * i.quantity, 0) + (selectedShippingMethod?.price ?? 0)
+                    items.reduce((s, i) => s + i.price * i.quantity, 0) + (selectedShippingMethod?.cost ?? 0)
                   )} تومان
                 </span>
               </div>

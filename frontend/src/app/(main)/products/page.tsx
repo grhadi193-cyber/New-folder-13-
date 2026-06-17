@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getProducts, getCategories, djangoImageUrl } from '@/lib/api/django'
 import ProductsClient from './ProductsClient'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({
   searchParams,
@@ -60,9 +60,14 @@ export default async function ProductsPage({
       getProducts(params),
       getCategories(),
     ])
-    const list = Array.isArray(productsData) ? productsData : (productsData.results ?? [])
-    totalCount = productsData.count ?? list.length
-    products = list
+    const rawList = Array.isArray(productsData) ? productsData : (productsData.results ?? [])
+    totalCount = productsData.count ?? rawList.length
+    products = rawList.map((p: any) => ({
+      ...p,
+      price: p.effective_price ?? p.discount_price ?? p.price,
+      compare_price: p.is_on_sale ? p.price : undefined,
+      in_stock: p.stock > 0,
+    }))
     categories = categoriesData ?? []
   } catch (err) {
     console.error('Products fetch error:', err)

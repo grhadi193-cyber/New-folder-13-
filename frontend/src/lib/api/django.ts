@@ -1,14 +1,31 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? ''
-const API_ORIGIN = BASE || 'http://localhost:8000'
+import { headers } from 'next/headers'
+
+const isServer = typeof window === 'undefined'
+
+async function getBaseUrl(): Promise<string> {
+  if (!isServer) return ''
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.INTERNAL_API_URL
+  if (envUrl) return envUrl
+  const h = await headers()
+  const host = h.get('host') ?? ''
+  if (host.includes('farazmgps.runflare.run')) return 'https://farzamback-farazmgps.runflare.run'
+  return 'http://localhost:8000'
+}
+
+const INTERNAL_RE = /http:\/\/(localhost|127\.0\.0\.1|backend):8000/g
 
 export function djangoImageUrl(url: string | null | undefined): string {
   if (!url) return ''
-  if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return `${API_ORIGIN}${url.startsWith('/') ? '' : '/'}${url}`
+  return url
+}
+
+export function publicImageUrl(url: string | null | undefined): string {
+  if (!url) return ''
+  return url
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${API_ORIGIN}${path}`, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
   })
@@ -33,6 +50,13 @@ export const getCategories = () =>
 // ─── Settings ───────────────────────────────────────────────
 export const getSettings = () =>
   request<any>('/api/settings')
+
+// ─── Contact ────────────────────────────────────────────────
+export const submitContact = (data: { name: string; phone: string; message: string }) =>
+  request<{ detail: string }>('/api/contact', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 
 // ─── Auth ───────────────────────────────────────────────────
 // بک‌اند فیلد phone_number می‌خواد (نه phone)
@@ -92,6 +116,11 @@ export const addAddress = (token: string, data: any) =>
     method: 'POST', body: JSON.stringify(data), headers: authHeaders(token),
   })
 
+export const deleteAddress = (token: string, addressId: number) =>
+  request<any>(`/api/auth/addresses/${addressId}`, {
+    method: 'DELETE', headers: authHeaders(token),
+  })
+
 // ─── Shipping ───────────────────────────────────────────────
 export const getProvinces = () =>
   request<any[]>('/api/shipping/provinces')
@@ -111,12 +140,12 @@ export const createOrder = (token: string, data: any) =>
 export const getOrders = (token: string) =>
   request<any[]>('/api/auth/orders', { headers: authHeaders(token) })
 
-export const getOrder = (token: string, id: string) =>
-  request<any>(`/api/auth/orders/${id}`, { headers: authHeaders(token) })
+export const getOrder = (token: string, id: string, signal?: AbortSignal) =>
+  request<any>(`/api/auth/orders/${id}`, { headers: authHeaders(token), signal })
 
 export const cancelOrder = (token: string, id: string) =>
-  request<any>(`/api/auth/orders/${id}/cancel`, {
-    method: 'POST', headers: authHeaders(token),
+  request<any>(`/api/auth/orders/${id}`, {
+    method: 'DELETE', headers: authHeaders(token),
   })
 
 // ─── Payment ─────────────────────────────────────────────────
@@ -131,6 +160,7 @@ export interface DjangoBlogPost {
   title: string
   slug: string
   content: string
+  summary?: string
   featured_image: string | null
   published_at: string | null
   created_at: string

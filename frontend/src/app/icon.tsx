@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { getSettings } from '@/lib/api/django'
 
+export const dynamic = 'force-dynamic'
 export const contentType = 'image/png'
 export const size = { width: 32, height: 32 }
 

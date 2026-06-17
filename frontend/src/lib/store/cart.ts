@@ -39,7 +39,7 @@ export const useCartStore = create<CartStore>()(
       }),
       removeItem: (id) => set((s) => ({ items: s.items.filter(i => i.product_id !== id) })),
       updateQuantity: (id, qty) => set((s) => ({
-        items: s.items.map(i => i.product_id === id ? { ...i, quantity: qty } : i),
+        items: s.items.map(i => i.product_id === id ? { ...i, quantity: Math.max(1, qty) } : i),
       })),
       clearCart: () => set({ items: [] }),
       totalCount: () => get().items.reduce((s, i) => s + i.quantity, 0),

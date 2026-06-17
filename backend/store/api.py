@@ -79,6 +79,13 @@ def get_product(request, product_id: str):
 
 @router.post("/orders", response=OrderOut, auth=_auth)
 def create_order_endpoint(request, payload: CreateOrderIn):
+    from core.models import SiteSettings
+    if not SiteSettings.get().shop_enabled:
+        return JsonResponse(
+            {"error": True, "code": "shop_disabled", "message": "فروشگاه در حال حاضر غیرفعال است."},
+            status=403,
+        )
+
     items = [item.dict() for item in payload.items]
     try:
         result = create_order(

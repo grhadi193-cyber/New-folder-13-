@@ -111,8 +111,14 @@ export default function ProductsClient({
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
-        const list: Product[] = Array.isArray(data) ? data : (data.results ?? [])
-        const count: number = data.count ?? list.length
+        const rawList: any[] = Array.isArray(data) ? data : (data.results ?? [])
+        const count: number = data.count ?? rawList.length
+        const list: Product[] = rawList.map((p: any) => ({
+          ...p,
+          price: p.effective_price ?? p.discount_price ?? p.price,
+          compare_price: p.is_on_sale ? p.price : undefined,
+          in_stock: p.stock > 0,
+        }))
         setProducts(list)
         setResultCount(count)
         setTotalPages(Math.max(1, Math.ceil(count / PAGE_SIZE)))

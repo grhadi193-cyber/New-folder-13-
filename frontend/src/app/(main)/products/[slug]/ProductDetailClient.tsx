@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { Truck, ShieldCheck, Headphones, Zap, Bell, Phone, CheckCircle } from 'lucide-react'
+import { Truck, ShieldCheck, Headphones, Zap, Bell, Phone, CheckCircle, Box, Weight } from 'lucide-react'
 
 import BreadcrumbTrail from '@/components/trail/BreadcrumbTrail'
 import PulsingDot from '@/components/tracking/PulsingDot'
@@ -30,6 +30,12 @@ interface ProductDetailClientProps {
     sku?: string
     in_stock?: boolean
     stock?: number
+    weight?: number
+    length?: number
+    width?: number
+    height?: number
+    volumetric_weight?: number
+    effective_shipping_weight?: number
     rating?: number
     review_count?: number
     category_id?: number
@@ -222,6 +228,36 @@ export default function ProductDetailClient({
                 <p className="text-xs text-slate-500 mt-0.5">تحویل ۲ تا ۵ روز کاری — هزینه ارسال بر اساس آدرس</p>
               </div>
             </div>
+
+            {(product.weight ?? 0) > 0 && (
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Weight className="w-4 h-4 text-blue-600" />
+                  <p className="text-xs font-semibold text-blue-700">اطلاعات وزن ارسال</p>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">وزن واقعی:</span>
+                    <span className="font-medium text-gray-700">{product.weight} kg</span>
+                  </div>
+                  {(product.volumetric_weight ?? 0) > 0 && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">وزن حجمی:</span>
+                        <span className="font-medium text-gray-700">{(product.volumetric_weight ?? 0).toFixed(2)} kg</span>
+                      </div>
+                      <div className="flex justify-between col-span-2 pt-1 border-t border-blue-100">
+                        <span className="text-blue-600 font-medium">وزن نهایی ارسال:</span>
+                        <span className="font-bold text-blue-700">{(product.effective_shipping_weight ?? 0).toFixed(2)} kg</span>
+                      </div>
+                      <p className="col-span-2 text-[10px] text-gray-400 mt-1">
+                        وزن حجمی = (طول × عرض × ارتفاع) ÷ ۵۰۰۰ — هر کدام بیشتر باشد ملاک است
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-3 gap-3 pt-2">
               {[

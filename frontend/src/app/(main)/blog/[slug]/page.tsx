@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import DOMPurify from 'isomorphic-dompurify'
-import { getDjangoBlog, getDjangoBlogs, djangoImageUrl } from '@/lib/api/django'
+
+import { getDjangoBlog, getDjangoBlogs, publicImageUrl } from '@/lib/api/django'
 import BlogCard from '@/components/blog/BlogCard'
 import BreadcrumbTrail from '@/components/trail/BreadcrumbTrail'
 import SignalStrength from '@/components/tracking/SignalStrength'
@@ -60,7 +59,7 @@ export default async function BlogDetailPage({ params }: Props) {
     relatedPosts = allPosts.filter((p: any) => p.slug !== slug).slice(0, 3)
   } catch {}
 
-  const coverSrc = post.featured_image ? djangoImageUrl(post.featured_image) : null
+  const coverSrc = post.featured_image ? publicImageUrl(post.featured_image) : null
 
   return (
     <div className="bg-white min-h-screen">
@@ -98,13 +97,10 @@ export default async function BlogDetailPage({ params }: Props) {
             <article className="lg:col-span-3">
               {coverSrc && (
                 <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-8 shadow-md">
-                  <Image
+                  <img
                     src={coverSrc}
                     alt={post.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 800px"
-                    priority
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
               )}
@@ -115,7 +111,7 @@ export default async function BlogDetailPage({ params }: Props) {
                   prose-a:text-[#1e3a5f] prose-a:no-underline hover:prose-a:underline
                   prose-img:rounded-2xl prose-img:shadow-md
                   prose-blockquote:border-r-4 prose-blockquote:border-[#1e3a5f] prose-blockquote:pr-4 prose-blockquote:not-italic"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content ?? '') }}
+                dangerouslySetInnerHTML={{ __html: post.content ?? '' }}
               />
             </article>
 

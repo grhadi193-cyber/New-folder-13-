@@ -4,10 +4,11 @@ import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, cn } from '@/lib/utils'
-import { ShoppingCart, Heart, Star } from 'lucide-react'
+import { ShoppingCart, Heart, Star, Phone } from 'lucide-react'
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useCartStore } from '@/lib/store/cart'
+import { useShopStatus } from '@/lib/store/shop-status'
 import { toast } from 'sonner'
 import { fireAddToCartConfetti } from '@/lib/confetti'
 
@@ -32,6 +33,7 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
   const [imgLoaded, setImgLoaded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const addItem = useCartStore((s) => s.addItem)
+  const { shopEnabled, supportPhone } = useShopStatus()
 
   const isOutOfStock = product.in_stock === false || product.stock === 0
   const hasDiscount = product.compare_price && product.compare_price > product.price
@@ -51,6 +53,7 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!shopEnabled) return
     if (isOutOfStock) {
       toast.error('این محصول در حال حاضر موجود نیست')
       return
@@ -184,7 +187,17 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
             )}
           </div>
 
-          {/* Add to cart button */}
+          {/* Add to cart / shop disabled */}
+          {!shopEnabled ? (
+            <a
+              href="/contact"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = '/contact' }}
+              className="w-full text-sm font-medium py-2.5 rounded-xl mt-3 bg-teal-600 text-white flex items-center justify-center gap-1.5 hover:bg-teal-700 transition-colors"
+            >
+              <Phone className="w-4 h-4" />
+              تماس با ما
+            </a>
+          ) : (
           <motion.button
             onClick={handleQuickAdd}
             disabled={isOutOfStock}
@@ -199,6 +212,7 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
           >
             {isOutOfStock ? 'ناموجود' : 'افزودن به سبد'}
           </motion.button>
+          )}
         </CardContent>
       </Card>
     </Link>

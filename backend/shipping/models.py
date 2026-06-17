@@ -10,8 +10,18 @@ import os
 class Province(models.Model):
     """استان‌های ایران — از JSON بارگذاری می‌شوند"""
 
+    ZONE_CHOICES = [
+        (1, "Zone 1 — همان استان (خراسان رضوی)"),
+        (2, "Zone 2 — استان‌های همجوار"),
+        (3, "Zone 3 — سایر استان‌ها"),
+    ]
+
     name = models.CharField(max_length=64, unique=True, verbose_name="نام استان")
     code = models.CharField(max_length=10, blank=True, verbose_name="کد استان")
+    zone_number = models.PositiveSmallIntegerField(
+        choices=ZONE_CHOICES, default=3, verbose_name="شماره منطقه (Zone)",
+        help_text="Zone 1: خراسان رضوی، Zone 2: همجوار، Zone 3: سایر"
+    )
     is_active = models.BooleanField(default=True, verbose_name="فعال")
 
     class Meta:
@@ -63,8 +73,20 @@ class ShippingZone(models.Model):
 # ── ShippingMethod ──────────────────────────────────────────────────────────
 
 class ShippingMethod(models.Model):
+    METHOD_TYPE_CHOICES = [
+        ("pishtaz",   "پست پیشتاز"),
+        ("sefareshi", "پست عادی/سفارشی"),
+        ("tipax",     "تیپاکس"),
+        ("pik",       "پیک (فقط مشهد)"),
+        ("barbari",   "باربری"),
+    ]
+
     name = models.CharField(max_length=128, verbose_name="نام روش")
     slug = models.SlugField(max_length=128, unique=True, blank=True, verbose_name="اسلاگ")
+    method_type = models.CharField(
+        max_length=20, choices=METHOD_TYPE_CHOICES, default="pishtaz",
+        verbose_name="نوع روش ارسال"
+    )
     carrier_name = models.CharField(max_length=100, blank=True, default="", verbose_name="نام پستی/پیک")
     tracking_url_template = models.CharField(
         max_length=500,
@@ -76,6 +98,11 @@ class ShippingMethod(models.Model):
     base_cost = models.DecimalField(max_digits=12, decimal_places=0, verbose_name="هزینه پایه")
     cost_per_kg = models.DecimalField(max_digits=8, decimal_places=0, default=0, verbose_name="هزینه هر کیلوگرم اضافی")
     free_above = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True, verbose_name="رایگان بالای")
+    fixed_price = models.DecimalField(
+        max_digits=12, decimal_places=0, null=True, blank=True,
+        verbose_name="قیمت ثابت (پیک)",
+        help_text="فقط برای پیک — قیمت ثابت بدون وابستگی به وزن"
+    )
     min_days = models.PositiveSmallIntegerField(default=2, verbose_name="حداقل روز")
     max_days = models.PositiveSmallIntegerField(default=7, verbose_name="حداکثر روز")
     zone = models.ForeignKey(
@@ -122,7 +149,7 @@ class ShippingRate(models.Model):
         max_digits=8, decimal_places=3, default=0, verbose_name="حداقل وزن (kg)"
     )
     weight_max = models.DecimalField(
-        max_digits=8, decimal_places=3, default=0, verbose_name="حداکثر وزن (kg)"
+        max_digits=8, decimal_places=3, default=9999, verbose_name="حداکثر وزن (kg)"
     )
     cost = models.DecimalField(max_digits=12, decimal_places=0, verbose_name="هزینه")
     is_active = models.BooleanField(default=True, verbose_name="فعال")

@@ -78,7 +78,8 @@ def _build_base_callback_url(order: Order) -> str:
 
 def verify_payment(transaction_id: int, raw_params: dict) -> bool:
     try:
-        txn = Transaction.objects.select_for_update().get(pk=transaction_id)
+        with db_transaction.atomic():
+            txn = Transaction.objects.select_for_update().get(pk=transaction_id)
     except Transaction.DoesNotExist:
         logger.error(f"[Payment] verify() called with unknown transaction_id={transaction_id}")
         return False

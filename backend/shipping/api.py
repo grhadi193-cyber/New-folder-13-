@@ -88,7 +88,7 @@ def get_shipping_options(request, payload: ShippingOptionIn):
 def list_provinces(request):
     """لیست استان‌های فعال ایران."""
     return [
-        ProvinceOut(id=p.id, name=p.name, code=p.code, is_active=p.is_active)
+        ProvinceOut(id=p.id, name=p.name, code=p.code, zone_number=p.zone_number, is_active=p.is_active)
         for p in get_active_provinces()
     ]
 
@@ -109,25 +109,49 @@ def list_cities(request, province_id: int):
 @router.post(
     "/calculate",
     response=CalculateShippingOut,
-    summary="محاسبه هزینه ارسال ( province + city + weight )",
+    summary="محاسبه هزینه ارسال",
 )
 def calculate_shipping(request, payload: CalculateShippingIn):
-    """
-    محاسبه هزینه ارسال بر اساس استان، شهر و وزن.
-    خروجی شامل لیست روش‌های ارسال با قیمت و ETA است.
-    """
+    """محاسبه هزینه ارسال بر اساس province_id, city_id, وزن و مبلغ."""
+    from store.models import Product
+
+    city_id = payload.city_id if payload.city_id else None
+    total_weight = payload.total_weight
+    order_total = payload.order_total
+
+    if payload.items:
+        total_weight = 0.0
+        calculated_total = Decimal("0")
+        for item in payload.items:
+            product = (
+                Product.objects
+                .filter(pk=item.product_id, is_active=True)
+                .only("weight", "length", "width", "height", "price", "discount_price")
+                .first()
+            )
+            if product is None:
+                return JsonResponse(
+                    {"error": True, "code": "product_unavailable", "message": f"محصول {item.product_id} در دسترس نیست."},
+                    status=400,
+                )
+            total_weight += product.effective_shipping_weight * item.quantity
+            effective_price = product.discount_price if product.discount_price else product.price
+            calculated_total += effective_price * item.quantity
+        if order_total == Decimal("0"):
+            order_total = calculated_total
+
     options = calculate_shipping_options_v2(
         province_id=payload.province_id,
-        city_id=payload.city_id,
-        total_weight_kg=payload.total_weight,
-        order_total=payload.order_total,
+        city_id=city_id,
+        total_weight_kg=total_weight,
+        order_total=order_total,
     )
 
     return CalculateShippingOut(
         province_id=payload.province_id,
-        city_id=payload.city_id,
-        total_weight=payload.total_weight,
-        order_total=payload.order_total,
+        city_id=city_id,
+        total_weight=total_weight,
+        order_total=order_total,
         options=[
             ShippingOptionV2Out(
                 id=opt["id"],
@@ -138,6 +162,7 @@ def calculate_shipping(request, payload: CalculateShippingIn):
                 cost=opt["cost"],
                 min_days=opt["min_days"],
                 max_days=opt["max_days"],
+                method_type=opt.get("method_type", "pishtaz"),
             )
             for opt in options
         ],
@@ -160,16 +185,18 @@ def admin_list_shipping_methods(request):
             id=m.id,
             name=m.name,
             slug=m.slug,
+            method_type=m.method_type,
             carrier_name=m.carrier_name,
             tracking_url_template=m.tracking_url_template,
             base_cost=m.base_cost,
             cost_per_kg=m.cost_per_kg,
+            fixed_price=m.fixed_price,
             free_above=m.free_above,
             min_days=m.min_days,
             max_days=m.max_days,
             is_active=m.is_active,
         )
-        for m in ShippingMethod.objects.select_related("zone").all()
+        for m in ShippingMethod.objects.all()
     ]
 
 

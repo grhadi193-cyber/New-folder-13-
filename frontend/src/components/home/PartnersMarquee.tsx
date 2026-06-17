@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { djangoImageUrl } from '@/lib/api/django'
+import { publicImageUrl } from '@/lib/api/django'
 
 const ITEMS_PER_PAGE = 5
 
@@ -74,7 +74,7 @@ export default function PartnersMarquee({ partners }: { partners?: Partner[] }) 
                 className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4"
               >
                 {visible.map((partner) => {
-                  const logoUrl = partner.logo ? djangoImageUrl(partner.logo) : null
+                  const logoUrl = partner.logo ? publicImageUrl(partner.logo) : null
                   const content = (
                     <div className="flex items-center justify-center bg-white rounded-xl border border-slate-100 p-4 h-16 hover:border-slate-300 hover:shadow-sm transition-all grayscale hover:grayscale-0">
                       {logoUrl ? (

@@ -104,7 +104,7 @@ export default function Navbar({ logoUrl }: NavbarProps = {}) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group/logo">
             {logoUrl ? (
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md group-hover/logo:shadow-lg group-hover/logo:scale-105 transition-all duration-300">
+              <div className="relative w-10 h-10 group-hover/logo:scale-105 transition-all duration-300">
                 <Image
                   src={logoUrl}
                   alt="آتی فرزام ایرانیان"

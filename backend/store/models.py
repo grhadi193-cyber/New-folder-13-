@@ -38,7 +38,10 @@ class Product(models.Model):
     meta_description = models.TextField(blank=True)
     view_count       = models.PositiveIntegerField(default=0)
     stock            = models.PositiveIntegerField(default=0)
-    weight           = models.DecimalField(max_digits=8, decimal_places=3, default=0)
+    weight           = models.DecimalField(max_digits=8, decimal_places=3, default=0, verbose_name="وزن واقعی (kg)")
+    length           = models.DecimalField(max_digits=8, decimal_places=1, default=0, verbose_name="طول (cm)")
+    width            = models.DecimalField(max_digits=8, decimal_places=1, default=0, verbose_name="عرض (cm)")
+    height           = models.DecimalField(max_digits=8, decimal_places=1, default=0, verbose_name="ارتفاع (cm)")
     image            = models.ImageField(upload_to="products/", blank=True, null=True)
     is_active        = models.BooleanField(default=True)
     created_at       = models.DateTimeField(auto_now_add=True)
@@ -50,6 +53,18 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def volumetric_weight(self):
+        """وزن حجمی = (طول × عرض × ارتفاع) ÷ ۵۰۰۰ — اگر ابعاد ندارد ۰."""
+        if self.length and self.width and self.height:
+            return float(self.length * self.width * self.height) / 5000.0
+        return 0.0
+
+    @property
+    def effective_shipping_weight(self):
+        """وزن نهایی ارسال = max(وزن واقعی, وزن حجمی)."""
+        return max(float(self.weight), self.volumetric_weight)
 
     @property
     def effective_price(self):

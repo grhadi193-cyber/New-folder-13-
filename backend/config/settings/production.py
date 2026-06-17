@@ -39,6 +39,7 @@ from .base import (  # explicit imports — no star import — avoids mutation i
     KAVENEGAR_API_KEY,
     SMS_SENDER,
     PAYMENT_CALLBACK_BASE_URL,
+    FRONTEND_BASE_URL,
     CORS_ALLOW_CREDENTIALS,
     DEFAULT_AUTO_FIELD,
     STATICFILES_STORAGE,
@@ -53,31 +54,18 @@ if _env_file.exists():
 # ---------------------------------------------------------------------------
 # Security
 # ---------------------------------------------------------------------------
-DEBUG = False
-
-# On the production server these MUST be in the environment.
-# On a dev machine running `check --settings=production` they fall back to
-# safe placeholder values so the import succeeds without crashing.
-SECRET_KEY = env("SECRET_KEY", default="placeholder-for-local-check-only-not-real")
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
-
-# Warn loudly if someone accidentally deploys with the placeholder key.
-if SECRET_KEY == "placeholder-for-local-check-only-not-real":
-    import warnings
-    warnings.warn(
-        "SECRET_KEY is using the placeholder value — "
-        "set a real SECRET_KEY in the environment before going live!",
-        stacklevel=1,
-    )
+DEBUG = env.bool("DEBUG", default=False)
+SECRET_KEY = env("SECRET_KEY")
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["farzamback-farazmgps.runflare.run", "localhost", "127.0.0.1"])
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
-SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=31536000)
+SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
@@ -85,15 +73,8 @@ SECURE_HSTS_PRELOAD = True
 # Database (PostgreSQL required in production)
 # ---------------------------------------------------------------------------
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="sqlite:///db.sqlite3"),
+    "default": env.db("DATABASE_URL"),
 }
-DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
-
-# Only add sslmode for non-SQLite backends to avoid sqlite3 warnings.
-_db_url = env("DATABASE_URL", default="sqlite:///db.sqlite3")
-if not _db_url.startswith("sqlite"):
-    DATABASES["default"].setdefault("OPTIONS", {})
-    DATABASES["default"]["OPTIONS"]["sslmode"] = env("DB_SSLMODE", default="prefer")
 
 # ---------------------------------------------------------------------------
 # Static files — WhiteNoise
@@ -117,8 +98,8 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 AZ_IRANIAN_BANK_GATEWAYS = {
     "BANKS": {
         "ZARINPAL": {
-            "MERCHANT_CODE": env("ZARINPAL_MERCHANT_CODE", default="SANDBOX"),
-            "SANDBOX": False,   # always OFF in production
+            "MERCHANT_CODE": env("ZARINPAL_MERCHANT_CODE", default="sandbox"),
+            "SANDBOX": env.bool("PAYMENT_SANDBOX", default=False),
         },
     },
     "IS_SAMPLE_FORM_ENABLE": False,
@@ -128,15 +109,23 @@ AZ_IRANIAN_BANK_GATEWAYS = {
 # ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------
-CORS_ALLOWED_ORIGINS = env.list(
-    "CORS_ALLOWED_ORIGINS",
-    default=[],
-)
+CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=False)
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[
+    "https://farazmgps.runflare.run",
+])
+
+# ---------------------------------------------------------------------------
+# CSRF Trusted Origins
+# ---------------------------------------------------------------------------
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[
+    "https://farzamback-farazmgps.runflare.run",
+    "https://farazmgps.runflare.run",
+])
 
 # ---------------------------------------------------------------------------
 # Logging — rotating files + console
 # ---------------------------------------------------------------------------
-LOG_DIR = env("LOG_DIR", default=str(BASE_DIR / "logs"))
+LOG_DIR = str(BASE_DIR / "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
@@ -179,7 +168,7 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["console", "file", "error_file"],
-            "level": env("DJANGO_LOG_LEVEL", default="WARNING"),
+            "level": "WARNING",
             "propagate": False,
         },
         "django.db.backends": {

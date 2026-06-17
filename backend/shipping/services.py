@@ -10,61 +10,118 @@ from .models import (
     City,
 )
 
+MASHHAD_PROVINCE_NAME = "خراسان رضوی"
+
 
 # ── Province / City ─────────────────────────────────────────────────────────
 
 def get_active_provinces() -> List[Province]:
-    """لیست استان‌های فعال."""
     return list(Province.objects.filter(is_active=True).order_by("name"))
 
 
 def get_cities_by_province(province_id: int) -> List[City]:
-    """لیست شهرهای یک استان."""
     return list(City.objects.filter(province_id=province_id, is_active=True).order_by("name"))
 
 
 # ── Shipping Methods ────────────────────────────────────────────────────────
 
 def get_active_shipping_methods() -> List[ShippingMethod]:
-    """لیست همه روش‌های ارسال فعال مرتب‌شده بر اساس نام."""
-    return list(ShippingMethod.objects.select_related("zone").filter(is_active=True))
+    return list(ShippingMethod.objects.filter(is_active=True))
 
 
-# ── Zone lookup ─────────────────────────────────────────────────────────────
+# ── Province/City name → ID lookup ─────────────────────────────────────────
 
-def _find_zone_for_province(province_name: str) -> Optional[ShippingZone]:
-    """
-    Zone متناسب با نام استان را پیدا می‌کند.
-    مقایسه case-sensitive روی JSONField (آرایه‌ای از رشته فارسی).
-    اگر استان در هیچ zone‌ای نبود → None برمی‌گرداند.
-    """
-    return ShippingZone.objects.filter(provinces__contains=province_name).first()
+def _resolve_province_city_ids(
+    province_name: str,
+    city_name: Optional[str] = None,
+) -> tuple[Optional[int], Optional[int]]:
+    province = Province.objects.filter(name__iexact=province_name.strip(), is_active=True).first()
+    if not province:
+        return None, None
+
+    city_id = None
+    if city_name:
+        city = City.objects.filter(
+            province=province, name__iexact=city_name.strip(), is_active=True
+        ).first()
+        if city:
+            city_id = city.pk
+
+    return province.pk, city_id
 
 
-# ── Cost calculator (legacy — base cost only) ──────────────────────────────
+def _is_mashhad(province: Province) -> bool:
+    return MASHHAD_PROVINCE_NAME in province.name or province.zone_number == 1
 
-def _calc_base_cost(
+
+# ── Zone-based cost formula ────────────────────────────────────────────────
+
+def _calc_zone_cost(
     method: ShippingMethod,
+    province: Province,
     total_weight_kg: float,
     order_total: Decimal,
 ) -> Decimal:
     """
-    هزینه ارسال پایه برای یک متد مشخص محاسبه می‌کند.
+    فرمول zone-based:
+      قیمت = base_price[zone] + max(0, وزن_نهایی - 1) × price_per_kg[zone]
 
-    منطق:
-      - اگر free_above تنظیم شده و order_total >= free_above → cost = 0
-      - وزن اضافه از ۱ کیلو: extra_weight = max(0, weight - 1)
-      - cost = base_cost + extra_weight × cost_per_kg
+    ابتدا ShippingRate برای province پیدا می‌کند.
+    اگر نبود، از base_cost / cost_per_kg متد استفاده می‌کند (fallback).
     """
     if method.free_above is not None and order_total >= method.free_above:
         return Decimal("0")
 
+    if method.fixed_price is not None:
+        return method.fixed_price
+
+    rate = ShippingRate.objects.filter(
+        shipping_method=method,
+        province=province,
+        is_active=True,
+    ).first()
+
+    if rate:
+        base = rate.cost
+        per_kg = method.cost_per_kg
+    else:
+        base = method.base_cost
+        per_kg = method.cost_per_kg
+
     extra_weight = max(0.0, total_weight_kg - 1.0)
-    cost = method.base_cost + Decimal(str(extra_weight)) * method.cost_per_kg
+    cost = base + Decimal(str(extra_weight)) * per_kg
     return cost
 
 
-# ── Advanced Cost calculator (province + city + weight) ────────────────────
+# ── Core: find best rate for a method + province + city + weight ───────────
+
+def _find_best_rate(
+    method: ShippingMethod,
+    province: Province,
+    city: Optional[City],
+    total_weight_kg: float,
+) -> Optional[ShippingRate]:
+    base_qs = ShippingRate.objects.filter(
+        shipping_method=method,
+        province=province,
+        is_active=True,
+        weight_min__lte=total_weight_kg,
+        weight_max__gte=total_weight_kg,
+    )
+
+    if city:
+        city_rate = base_qs.filter(city=city).first()
+        if city_rate:
+            return city_rate
+
+    province_rate = base_qs.filter(city__isnull=True).first()
+    if province_rate:
+        return province_rate
+
+    return None
+
+
+# ── Core shipping cost calculator ──────────────────────────────────────────
 
 def calculate_shipping_cost_v2(
     shipping_method_id: int,
@@ -73,10 +130,6 @@ def calculate_shipping_cost_v2(
     total_weight_kg: float,
     order_total: Optional[Decimal] = None,
 ) -> Decimal:
-    """
-    محاسبه هزینه ارسال بر اساس روش، استان، شهر و وزن.
-    ابتدا ShippingRate را چک می‌کند، اگر نبود از base_cost استفاده می‌کند.
-    """
     try:
         method = ShippingMethod.objects.get(pk=shipping_method_id, is_active=True)
     except ShippingMethod.DoesNotExist:
@@ -89,39 +142,56 @@ def calculate_shipping_cost_v2(
 
     city = None
     if city_id:
-        try:
-            city = City.objects.get(pk=city_id, province=province, is_active=True)
-        except City.DoesNotExist:
-            pass  # اگر شهر پیدا نشد، نرخ استانی را استفاده می‌کنیم
+        city = City.objects.filter(pk=city_id, province=province, is_active=True).first()
 
-    # 1. چک کردن free_above
-    if method.free_above is not None and order_total is not None and order_total >= method.free_above:
+    # Pik: فقط مشهد
+    if method.method_type == "pik" and not _is_mashhad(province):
+        raise NotFoundError("پیک فقط برای مشهد فعال است.")
+
+    # 1. چک free_above
+    total = order_total or Decimal("0")
+    if method.free_above is not None and total >= method.free_above:
         return Decimal("0")
 
-    # 2. جستجوی ShippingRate
-    rate_qs = ShippingRate.objects.filter(
-        shipping_method=method,
-        province=province,
-        is_active=True,
-    )
+    # 2. چک fixed_price (پیک)
+    if method.fixed_price is not None:
+        return method.fixed_price
 
-    if city:
-        # ابتدا نرخ شهر را چک کن
-        city_rate = rate_qs.filter(city=city, weight_min__lte=total_weight_kg, weight_max__gte=total_weight_kg).first()
-        if city_rate:
-            return city_rate.cost
+    # 3. جستجوی ShippingRate دقیق (شهری → استانی → وزنی)
+    rate = _find_best_rate(method, province, city, total_weight_kg)
+    if rate:
+        return rate.cost
 
-    # نرخ استان (city=None)
-    province_rate = rate_qs.filter(
-        city__isnull=True,
-        weight_min__lte=total_weight_kg,
-        weight_max__gte=total_weight_kg,
-    ).first()
-    if province_rate:
-        return province_rate.cost
+    # 4. fallback zone-based formula
+    return _calc_zone_cost(method, province, total_weight_kg, total)
 
-    # 3. fallback به base_cost
-    return _calc_base_cost(method, total_weight_kg, order_total or Decimal("0"))
+
+def calculate_shipping_cost_by_name(
+    method: ShippingMethod,
+    province_name: str,
+    city_name: Optional[str],
+    total_weight_kg: float,
+    order_total: Decimal,
+) -> Decimal:
+    if method.free_above is not None and order_total >= method.free_above:
+        return Decimal("0")
+
+    if method.fixed_price is not None:
+        return method.fixed_price
+
+    province_id, city_id = _resolve_province_city_ids(province_name, city_name)
+
+    if province_id:
+        province = Province.objects.get(pk=province_id)
+        city = City.objects.get(pk=city_id) if city_id else None
+
+        rate = _find_best_rate(method, province, city, total_weight_kg)
+        if rate:
+            return rate.cost
+
+        return _calc_zone_cost(method, province, total_weight_kg, order_total)
+
+    return _calc_zone_cost(method, None, total_weight_kg, order_total)
 
 
 def calculate_shipping_options_v2(
@@ -130,18 +200,20 @@ def calculate_shipping_options_v2(
     total_weight_kg: float,
     order_total: Decimal,
 ) -> list:
-    """
-    بر اساس استان، شهر (اختیاری) و وزن سبد، لیست روش‌های ارسال با قیمت محاسبه‌شده برمی‌گرداند.
-    """
     try:
         province = Province.objects.get(pk=province_id, is_active=True)
     except Province.DoesNotExist:
         return []
 
     methods = ShippingMethod.objects.filter(is_active=True)
-
+    is_mashhad = _is_mashhad(province)
     results = []
+
     for method in methods:
+        # پیک فقط برای مشهد
+        if method.method_type == "pik" and not is_mashhad:
+            continue
+
         try:
             cost = calculate_shipping_cost_v2(
                 shipping_method_id=method.pk,
@@ -159,6 +231,7 @@ def calculate_shipping_options_v2(
                 "cost": cost,
                 "min_days": method.min_days,
                 "max_days": method.max_days,
+                "method_type": method.method_type,
             })
         except Exception:
             continue
@@ -173,40 +246,37 @@ def calculate_shipping_options(
     total_weight_kg: float,
     order_total: Decimal,
 ) -> list:
-    """
-    بر اساس نام استان (legacy) و وزن سبد، لیست روش‌های ارسال با قیمت برمی‌گرداند.
-    این تابع برای سازگاری با کد قدیمی نگه داشته شده است.
-    """
-    zone = _find_zone_for_province(province)
+    province_obj = Province.objects.filter(name__iexact=province.strip(), is_active=True).first()
+    if not province_obj:
+        return []
 
-    if zone is not None:
-        methods = ShippingMethod.objects.filter(zone=zone, is_active=True)
-    else:
-        methods = ShippingMethod.objects.filter(zone__isnull=True, is_active=True)
-
+    methods = ShippingMethod.objects.filter(is_active=True)
+    is_mashhad = _is_mashhad(province_obj)
     results = []
-    for method in methods.order_by("base_cost"):
-        cost = _calc_base_cost(method, total_weight_kg, order_total)
+
+    for method in methods:
+        if method.method_type == "pik" and not is_mashhad:
+            continue
+
+        cost = _calc_zone_cost(method, province_obj, total_weight_kg, order_total)
         results.append({
-            "id":       method.pk,
-            "name":     method.name,
-            "cost":     cost,
+            "id": method.pk,
+            "name": method.name,
+            "cost": cost,
             "min_days": method.min_days,
             "max_days": method.max_days,
         })
 
-    return results
+    return sorted(results, key=lambda x: x["cost"])
 
 
 def calculate_shipping_cost(
     method_id_or_obj,
     total_weight: Optional[float] = None,
     order_total: Optional[Decimal] = None,
+    province_name: Optional[str] = None,
+    city_name: Optional[str] = None,
 ) -> Decimal:
-    """
-    هزینه ارسال برای یک ShippingMethod مشخص محاسبه می‌کند.
-    هم method_id (int) و هم instance (ShippingMethod) را قبول می‌کند.
-    """
     if isinstance(method_id_or_obj, ShippingMethod):
         method = method_id_or_obj
     else:
@@ -218,15 +288,27 @@ def calculate_shipping_cost(
             )
 
     weight = total_weight if total_weight is not None else 0.0
-    total  = order_total  if order_total  is not None else Decimal("0")
+    total = order_total if order_total is not None else Decimal("0")
 
-    return _calc_base_cost(method, weight, total)
+    if method.fixed_price is not None:
+        return method.fixed_price
+
+    if province_name:
+        return calculate_shipping_cost_by_name(
+            method=method,
+            province_name=province_name,
+            city_name=city_name,
+            total_weight_kg=weight,
+            order_total=total,
+        )
+
+    province_obj = Province.objects.filter(name__iexact=MASHHAD_PROVINCE_NAME).first()
+    return _calc_zone_cost(method, province_obj, weight, total)
 
 
 # ── Rate CRUD helpers ──────────────────────────────────────────────────────
 
 def get_shipping_rates_for_method(method_id: int) -> List[ShippingRate]:
-    """لیست تعرفه‌های یک روش ارسال."""
     return list(
         ShippingRate.objects
         .filter(shipping_method_id=method_id)

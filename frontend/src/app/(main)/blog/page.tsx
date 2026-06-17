@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'آخرین مقالات، اخبار و راهنماهای ردیاب GPS از تیم آتی فرزام ایرانیان',
 }
 
-export const revalidate = 86400
+export const dynamic = 'force-dynamic'
 
 export default async function BlogPage() {
   let posts: DjangoBlogPost[] = []

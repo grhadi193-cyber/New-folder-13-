@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import DOMPurify from 'isomorphic-dompurify'
+
 import { getPage, getSettings, djangoImageUrl } from '@/lib/api/django'
 import BreadcrumbTrail from '@/components/trail/BreadcrumbTrail'
 import SectionTitle from '@/components/shared/SectionTitle'
@@ -73,7 +73,7 @@ export default async function AboutPage() {
                   className="prose prose-lg max-w-none text-gray-700 leading-8
                     prose-headings:text-gray-900 prose-headings:font-bold
                     prose-a:text-[#1e3a5f] prose-img:rounded-2xl prose-img:shadow-md"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(pageData.content) }}
+                  dangerouslySetInnerHTML={{ __html: pageData.content }}
                 />
               ) : (
                 <div className="text-gray-600 leading-8 space-y-4">

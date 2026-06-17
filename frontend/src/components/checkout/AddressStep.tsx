@@ -26,6 +26,7 @@ export default function AddressStep({ token, selectedId, onSelect, onNext }: Add
   const [cities, setCities] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [loadError, setLoadError] = useState('')
 
   const [form, setForm] = useState({
     title: '',
@@ -45,7 +46,7 @@ export default function AddressStep({ token, selectedId, onSelect, onNext }: Add
         setProvinces(provs)
         if (addrs.length > 0 && !selectedId) onSelect(addrs[0].id, addrs[0])
       } catch {
-        // ignore
+        setLoadError('خطا در بارگذاری آدرس‌ها. لطفاً صفحه را رفرش کنید.')
       } finally {
         setLoading(false)
       }
@@ -111,6 +112,22 @@ export default function AddressStep({ token, selectedId, onSelect, onNext }: Add
     return (
       <div className="space-y-4">
         {[1, 2].map((i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold text-text-primary mb-4">انتخاب آدرس تحویل</h2>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-4 text-center space-y-3">
+            <p className="text-red-600 text-sm">{loadError}</p>
+            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+              تلاش مجدد
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }

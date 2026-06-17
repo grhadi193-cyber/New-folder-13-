@@ -6,14 +6,17 @@ class CustomUserManager(BaseUserManager):
     Custom manager for User model where phone_number is the unique identifier.
     """
 
-    def create_user(self, phone_number: str, **extra_fields):
+    def create_user(self, phone_number: str, password=None, **extra_fields):
         if not phone_number:
             raise ValueError("Phone number is required.")
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         user = self.model(phone_number=phone_number, **extra_fields)
-        user.set_unusable_password()
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 

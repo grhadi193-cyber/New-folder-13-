@@ -32,10 +32,8 @@ from typing import List, Optional
 
 from django.http import JsonResponse
 from ninja import Router
-from pydantic import BaseModel
 
 from core.auth import AdminBearer
-from core.exceptions import AppException
 
 from .models import (
     NotificationChannel,
@@ -63,7 +61,6 @@ from .schemas import (
 from .services import (
     get_available_variables,
     get_event_type_choices,
-    process_queue_item,
     render_template,
     send_notification,
     process_pending_queue,

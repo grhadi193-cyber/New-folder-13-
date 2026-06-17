@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import {
-  getSettings, getProducts, getBanners, getPartners, getDjangoBlogs, djangoImageUrl,
+  getSettings, getProducts, getBanners, getPartners, getDjangoBlogs, djangoImageUrl, publicImageUrl,
 } from '@/lib/api/django'
 import HeroSlider from '@/components/home/HeroSlider'
 import PartnersMarquee from '@/components/home/PartnersMarquee'
@@ -19,7 +19,7 @@ import {
   Play, Apple,
 } from 'lucide-react'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'آتی فرزام ایرانیان - توسعه‌دهنده ردیاب GPS',
@@ -36,12 +36,19 @@ async function fetchAllData() {
       getDjangoBlogs(),
     ])
 
-  const products = productsResult.status === 'fulfilled'
+  const rawProducts = productsResult.status === 'fulfilled'
     ? (productsResult.value?.results ?? productsResult.value ?? [])
     : []
 
+  const products = rawProducts.map((p: any) => ({
+    ...p,
+    price: p.effective_price ?? p.discount_price ?? p.price,
+    compare_price: p.is_on_sale ? p.price : undefined,
+    in_stock: p.stock > 0,
+  }))
+
   const imageMap: Record<string, string> = {}
-  for (const p of products) {
+  for (const p of rawProducts) {
     if (p.image) {
       imageMap[String(p.id)] = djangoImageUrl(p.image)
     }
@@ -82,14 +89,14 @@ export default async function HomePage() {
 
   const bannersWithImages = banners.map((b: any) => ({
     ...b,
-    imageUrl: b.image ?? undefined,
+    imageUrl: b.image ? publicImageUrl(b.image) : undefined,
     cta_link: b.cta_link || b.link || undefined,
     cta2_link: b.cta2_link || undefined,
   }))
 
-  const aboutImageUrl = settings?.about_image ? djangoImageUrl(settings.about_image) : null
-  const softwareImageUrl = settings?.software_image ? djangoImageUrl(settings.software_image) : null
-  const appImageUrl = settings?.app_image ? djangoImageUrl(settings.app_image) : null
+  const aboutImageUrl = settings?.about_image ? publicImageUrl(settings.about_image) : null
+  const softwareImageUrl = settings?.software_image ? publicImageUrl(settings.software_image) : null
+  const appImageUrl = settings?.app_image ? publicImageUrl(settings.app_image) : null
 
   return (
     <div dir="rtl">
@@ -143,7 +150,7 @@ export default async function HomePage() {
           <SectionTitle eyebrow="چرا آتی فرزام" title="چرا ما را انتخاب کنید؟" align="center" className="mb-14" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {WHY_US.map((item) => {
-              const iconUrl = settings?.[item.key] ? djangoImageUrl(settings[item.key]) : null
+              const iconUrl = settings?.[item.key] ? publicImageUrl(settings[item.key]) : null
               const FallbackIcon = item.fallback
               return (
                 <div

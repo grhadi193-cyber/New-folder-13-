@@ -10,6 +10,7 @@ class ProvinceOut(Schema):
     id: int
     name: str
     code: str
+    zone_number: int = 3
     is_active: bool
 
 
@@ -34,8 +35,10 @@ class ShippingZoneOut(Schema):
 class ShippingMethodOut(Schema):
     id: int
     name: str
+    method_type: str = "pishtaz"
     base_cost: Decimal
     cost_per_kg: Decimal
+    fixed_price: Optional[Decimal] = None
     free_above: Optional[Decimal] = None
     min_days: int
     max_days: int
@@ -45,10 +48,12 @@ class ShippingMethodDetailOut(Schema):
     id: int
     name: str
     slug: str
+    method_type: str = "pishtaz"
     carrier_name: str
     tracking_url_template: str
     base_cost: Decimal
     cost_per_kg: Decimal
+    fixed_price: Optional[Decimal] = None
     free_above: Optional[Decimal] = None
     min_days: int
     max_days: int
@@ -77,11 +82,22 @@ class ShippingOptionOut(Schema):
 
 # ── NEW: Calculate Shipping V2 ─────────────────────────────────────────────
 
+class ShippingCalcItemIn(Schema):
+    product_id: int
+    quantity: int
+
+
 class CalculateShippingIn(Schema):
     province_id: int
-    city_id: Optional[int] = None
+    city_id: int = 0
     total_weight: float = 0.0
     order_total: Decimal = Decimal("0")
+    items: Optional[List[ShippingCalcItemIn]] = None
+
+
+class ShippingByAddressIn(Schema):
+    address_id: int
+    items: List[ShippingCalcItemIn]
 
 
 class ShippingOptionV2Out(Schema):
@@ -93,6 +109,7 @@ class ShippingOptionV2Out(Schema):
     cost: Decimal
     min_days: int
     max_days: int
+    method_type: str = "pishtaz"
 
 
 class CalculateShippingOut(Schema):
@@ -124,7 +141,7 @@ class ShippingRateCreateIn(Schema):
     province_id: int
     city_id: Optional[int] = None
     weight_min: Decimal = Decimal("0")
-    weight_max: Decimal = Decimal("1")
+    weight_max: Decimal = Decimal("9999")
     cost: Decimal
 
 

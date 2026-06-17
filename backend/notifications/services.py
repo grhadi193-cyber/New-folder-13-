@@ -11,7 +11,6 @@ Notification Service Layer
 import logging
 import re
 from typing import Dict, List, Optional
-from decimal import Decimal
 
 from django.conf import settings
 from django.utils import timezone

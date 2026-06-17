@@ -1,10 +1,12 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, CheckCircle, Bell } from 'lucide-react'
+import { ShoppingCart, CheckCircle, Bell, Phone } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useCartStore } from '@/lib/store/cart'
+import { useShopStatus } from '@/lib/store/shop-status'
 import { fireAddToCartConfetti } from '@/lib/confetti'
 
 interface AddToCartButtonProps {
@@ -20,7 +22,19 @@ interface AddToCartButtonProps {
 
 export default function AddToCartButton({ product, quantity, imageUrl, inStock = true }: AddToCartButtonProps) {
   const addItem = useCartStore((s) => s.addItem)
+  const { shopEnabled, supportPhone } = useShopStatus()
   const [added, setAdded] = useState(false)
+
+  if (!shopEnabled) {
+    return (
+      <Button asChild className="w-full h-14 text-base rounded-xl bg-teal-600 hover:bg-teal-700 hover:shadow-lg gap-2.5 transition-all duration-200 font-bold" size="lg">
+        <Link href="/contact">
+          <Phone className="w-5 h-5" />
+          تماس با ما
+        </Link>
+      </Button>
+    )
+  }
 
   const handleAdd = () => {
     if (!inStock) {

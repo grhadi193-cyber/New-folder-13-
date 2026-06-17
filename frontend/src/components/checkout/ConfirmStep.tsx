@@ -24,7 +24,7 @@ export default function ConfirmStep({ token, address, shippingMethod, onBack }: 
   const [error, setError] = useState('')
 
   const subtotal = totalPrice()
-  const shipping = shippingMethod?.price ?? shippingMethod?.cost ?? 0
+  const shipping = shippingMethod?.cost ?? 0
   const total = subtotal + Number(shipping)
 
   const handlePay = async () => {
@@ -35,7 +35,7 @@ export default function ConfirmStep({ token, address, shippingMethod, onBack }: 
       const order = await createOrder(token, {
         address_id: address.id,
         shipping_method_id: shippingMethod.id,
-        items: items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
+        items: items.map((i) => ({ product_id: Number(i.product_id), quantity: i.quantity })),
         idempotency_key: idempotencyKey,
       })
       const payment = await initiatePayment(token, String(order.id))
@@ -47,8 +47,19 @@ export default function ConfirmStep({ token, address, shippingMethod, onBack }: 
       } else {
         router.push(`/payment/result?status=paid&order_id=${order.id}`)
       }
-    } catch {
-      setError('خطا در ثبت سفارش. لطفاً دوباره تلاش کنید.')
+    } catch (e: any) {
+      const msg = e?.message || ''
+      if (msg.includes('422') || msg.includes('validation')) {
+        setError('اطلاعات سفارش نامعتبر است. لطفاً مراحل قبل را بررسی کنید.')
+      } else if (msg.includes('403') || msg.includes('shop_disabled')) {
+        setError('فروشگاه در حال حاضر غیرفعال است.')
+      } else if (msg.includes('insufficient_stock') || msg.includes('400')) {
+        setError('موجودی یکی از محصولات کافی نیست. لطفاً سبد خرید را بررسی کنید.')
+      } else if (msg.includes('401') || msg.includes('403')) {
+        setError('نشست شما منقضی شده. لطفاً دوباره وارد شوید.')
+      } else {
+        setError('خطا در ثبت سفارش. لطفاً دوباره تلاش کنید.')
+      }
     } finally {
       setLoading(false)
     }

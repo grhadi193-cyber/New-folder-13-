@@ -1,12 +1,11 @@
 'use client'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, ArrowLeft, Newspaper } from 'lucide-react'
 import { formatDate, cn } from '@/lib/utils'
-import { djangoImageUrl } from '@/lib/api/django'
+import { publicImageUrl } from '@/lib/api/django'
 import { motion } from 'framer-motion'
 
 interface BlogCardProps {
@@ -28,9 +27,9 @@ interface BlogCardProps {
 
 export default function BlogCard({ post, className }: BlogCardProps) {
   const coverSrc = post.featured_image
-    ? djangoImageUrl(post.featured_image)
+    ? publicImageUrl(post.featured_image)
     : post.cover
-      ? djangoImageUrl(post.cover)
+      ? publicImageUrl(post.cover)
       : null
 
   const date = post.published_at ?? post.created_at ?? post.created ?? ''
@@ -49,12 +48,10 @@ export default function BlogCard({ post, className }: BlogCardProps) {
       >
         <div className="relative aspect-[16/9] bg-bg-secondary overflow-hidden">
           {coverSrc ? (
-            <Image
+            <img
               src={coverSrc}
               alt={post.title}
-              fill
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-navy/10 to-teal/10 flex items-center justify-center">

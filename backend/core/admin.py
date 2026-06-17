@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from core.models import SiteSettings, Banner, Partner, Page
+from core.models import SiteSettings, Banner, Partner, Page, ContactMessage
 
 
 @admin.register(SiteSettings)
@@ -27,7 +27,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             "fields": ("software_login_url", "software_description", "google_play_url", "app_store_url"),
         }),
         ("وضعیت سایت", {
-            "fields": ("maintenance_mode",),
+            "fields": ("maintenance_mode", "shop_enabled"),
         }),
     )
 
@@ -65,3 +65,15 @@ class PageAdmin(admin.ModelAdmin):
     list_display  = ("title", "slug", "is_active", "updated_at")
     list_filter   = ("is_active",)
     prepopulated_fields = {"slug": ("title",)}
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display  = ("name", "phone", "is_read", "created_at")
+    list_filter   = ("is_read",)
+    list_editable = ("is_read",)
+    readonly_fields = ("name", "phone", "message", "created_at")
+    search_fields = ("name", "phone", "message")
+
+    def has_add_permission(self, request):
+        return False
