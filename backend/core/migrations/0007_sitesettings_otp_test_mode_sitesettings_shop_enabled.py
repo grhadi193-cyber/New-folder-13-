@@ -3,6 +3,17 @@
 from django.db import migrations, models
 
 
+def add_fields_if_not_exist(apps, schema_editor):
+    SiteSettings = apps.get_model("core", "SiteSettings")
+    table_name = SiteSettings._meta.db_table
+    columns = [col.name for col in schema_editor.connection.introspection.get_table_description(schema_editor.cursor, table_name)]
+    with schema_editor.connection.cursor() as cursor:
+        if "otp_test_mode" not in columns:
+            schema_editor.add_field(SiteSettings, SiteSettings._meta.get_field("otp_test_mode"))
+        if "shop_enabled" not in columns:
+            schema_editor.add_field(SiteSettings, SiteSettings._meta.get_field("shop_enabled"))
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,16 +21,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="sitesettings",
-            name="otp_test_mode",
-            field=models.BooleanField(
-                default=False, verbose_name="حالت تست پیامک (نمایش کد در فرانت)"
-            ),
-        ),
-        migrations.AddField(
-            model_name="sitesettings",
-            name="shop_enabled",
-            field=models.BooleanField(default=True, verbose_name="فروشگاه فعال"),
-        ),
+        migrations.RunPython(add_fields_if_not_exist, migrations.RunPython.noop),
     ]
