@@ -13,13 +13,18 @@ services:
     build:
       command: |
         pip install -r requirements.txt
-        python manage.py collectstatic --noinput
     start:
       command: /entrypoint.sh
     ports:
       - 8000
     env:
       - DJANGO_SETTINGS_MODULE=config.settings.production
+      - SECRET_KEY=django-insecure-k8$2m#xq!v@9n^p&3w*r7j+5h=2f!g6u4i1o0a9s8d7f6g5h4j3k2l1z0x9c8v7b6n5m4
+      - DATABASE_URL=postgresql://postgres:xXmTsf7AnLBjo4tW4Jfl@farzamsql-trv-service:5432/farzamsqevi_db
+      - DEBUG=False
+      - ALLOWED_HOSTS=farzamback-farazmgps.runflare.run,localhost,127.0.0.1
+      - CORS_ALLOWED_ORIGINS=https://farazmgps.runflare.run
+      - CSRF_TRUSTED_ORIGINS=https://farzamback-farazmgps.runflare.run,https://farazmgps.runflare.run
     disk:
       - name: media
         path: /app/media
@@ -40,6 +45,9 @@ services:
       command: npm start
     ports:
       - 3000
+    env:
+      - NEXT_PUBLIC_API_URL=https://farzamback-farazmgps.runflare.run
+      - NEXT_PUBLIC_SITE_URL=https://farazmgps.runflare.run
 
 databases:
   - name: postgres
@@ -48,7 +56,6 @@ databases:
     size: 5GB
 
 cron:
-  # Run migrations on deploy
   - name: migrate
     command: python manage.py migrate --noinput
     service: backend
