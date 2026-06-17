@@ -62,7 +62,7 @@ STATIC_ROOT = "/app/public/static"
 # Security
 # ---------------------------------------------------------------------------
 DEBUG = env.bool("DEBUG", default=False)
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="django-insecure-fallback-key-change-me-in-production")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["farzamback-farazmgps.runflare.run", "localhost", "127.0.0.1"])
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -80,7 +80,7 @@ SECURE_HSTS_PRELOAD = True
 # Database (PostgreSQL required in production)
 # ---------------------------------------------------------------------------
 DATABASES = {
-    "default": env.db("DATABASE_URL"),
+    "default": env.db("DATABASE_URL", default="postgres://postgres:postgres@localhost:5432/postgres"),
 }
 
 # ---------------------------------------------------------------------------
