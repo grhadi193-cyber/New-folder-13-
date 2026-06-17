@@ -29,7 +29,9 @@ def send_otp(request, payload: SendOTPIn):
         )
     response = {"detail": "کد تایید ارسال شد"}
     # In test mode, return the OTP code directly
-    if getattr(settings, "DEBUG", False) or getattr(settings, "TEST_MODE", False):
+    from core.models import SiteSettings
+    site_otp_test = SiteSettings.get().otp_test_mode
+    if getattr(settings, "DEBUG", False) or getattr(settings, "TEST_MODE", False) or site_otp_test:
         from .models import OTPRecord
         record = OTPRecord.objects.filter(
             phone_number=payload.phone_number, is_used=False

@@ -697,6 +697,7 @@ class AdminSiteSettingsOut(BaseModel):
     primary_color:    str
     maintenance_mode: bool
     shop_enabled:     bool
+    otp_test_mode:    bool = False
     social_instagram: str
     social_telegram:  str
     support_phone:    str
@@ -716,6 +717,7 @@ class AdminSiteSettingsUpdateIn(BaseModel):
     primary_color:    Optional[str]  = None
     maintenance_mode: Optional[bool] = None
     shop_enabled:     Optional[bool] = None
+    otp_test_mode:    Optional[bool] = None
     social_instagram: Optional[str]  = None
     social_telegram:  Optional[str]  = None
     support_phone:    Optional[str]  = None
@@ -740,6 +742,7 @@ def _settings_to_out(s, request) -> AdminSiteSettingsOut:
         primary_color    = s.primary_color,
         maintenance_mode = s.maintenance_mode,
         shop_enabled     = s.shop_enabled,
+        otp_test_mode    = s.otp_test_mode,
         social_instagram = s.social_instagram,
         social_telegram  = s.social_telegram,
         support_phone    = s.support_phone,
@@ -779,7 +782,7 @@ def admin_update_settings(request, payload: AdminSiteSettingsUpdateIn):
 
     updatable_fields = [
         "site_name", "banner_text", "announcement", "primary_color",
-        "maintenance_mode", "shop_enabled", "social_instagram", "social_telegram",
+        "maintenance_mode", "shop_enabled", "otp_test_mode", "social_instagram", "social_telegram",
         "support_phone", "hero_title", "hero_text", "about_us",
     ]
     update_fields = []

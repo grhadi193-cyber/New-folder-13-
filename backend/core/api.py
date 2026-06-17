@@ -45,6 +45,7 @@ class SiteSettingsOut(BaseModel):
     category_image_4:    Optional[str] = None
     testimonial_bg:      Optional[str] = None
     newsletter_bg:       Optional[str] = None
+    otp_test_mode:       bool = False
 
     model_config = {"from_attributes": True}
 
@@ -134,6 +135,7 @@ def get_site_settings(request):
         category_image_4    = _url(s.category_image_4),
         testimonial_bg      = _url(s.testimonial_bg),
         newsletter_bg       = _url(s.newsletter_bg),
+        otp_test_mode       = s.otp_test_mode,
     )
 
 
