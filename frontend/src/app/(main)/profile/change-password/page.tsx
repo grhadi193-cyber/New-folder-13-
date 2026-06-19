@@ -92,7 +92,7 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="space-y-4">
-      <BreadcrumbTrail />
+      <BreadcrumbTrail dark={false} />
 
       <Card className="max-w-lg rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
         <CardHeader>

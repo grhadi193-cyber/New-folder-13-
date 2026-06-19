@@ -1,27 +1,22 @@
-import { headers } from 'next/headers'
-
 const isServer = typeof window === 'undefined'
 
-async function getBaseUrl(): Promise<string> {
+function getBaseUrl(): string {
   if (!isServer) return ''
-  const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.INTERNAL_API_URL
-  if (envUrl) return envUrl
-  const h = await headers()
-  const host = h.get('host') ?? ''
-  if (host.includes('farazmgps.runflare.run')) return 'https://farzamback-farazmgps.runflare.run'
-  return 'http://localhost:8000'
+  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 }
+
+const API_ORIGIN = getBaseUrl()
 
 const INTERNAL_RE = /http:\/\/(localhost|127\.0\.0\.1|backend):8000/g
 
 export function djangoImageUrl(url: string | null | undefined): string {
   if (!url) return ''
-  return url
+  return url.replace(INTERNAL_RE, '')
 }
 
 export function publicImageUrl(url: string | null | undefined): string {
   if (!url) return ''
-  return url
+  return url.replace(INTERNAL_RE, '')
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

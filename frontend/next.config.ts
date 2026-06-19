@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next'
 import path from 'path'
 
+const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname),
@@ -18,13 +20,24 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://farzamback-farazmgps.runflare.run/api/:path*',
+        destination: `${API_URL}/api/:path*`,
       },
       {
-        source: '/public/media/:path*',
-        destination: 'https://farzamback-farazmgps.runflare.run/public/media/:path*',
+        source: '/media/:path*',
+        destination: `${API_URL}/media/:path*`,
       },
     ]
+  },
+  async redirects() {
+    return process.env.NODE_ENV === 'production'
+      ? [
+          {
+            source: '/editor',
+            destination: '/404',
+            permanent: false,
+          },
+        ]
+      : [];
   },
 }
 export default nextConfig

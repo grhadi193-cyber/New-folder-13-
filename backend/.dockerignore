@@ -1,0 +1,15 @@
+.env
+.env.*
+__pycache__/
+*.pyc
+.git
+.gitignore
+media/
+logs/
+*.md
+.pytest_cache
+venv/
+.venv/
+staticfiles/
+dist/
+build/

@@ -119,7 +119,7 @@ export default function AddressesPage() {
 
   return (
     <div className="space-y-4">
-      <BreadcrumbTrail />
+      <BreadcrumbTrail dark={false} />
 
       <Card className="rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
         <CardHeader className="flex flex-row items-center justify-between">

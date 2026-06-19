@@ -106,7 +106,7 @@ export default function OrderDetailPage() {
 
   return (
     <div className="space-y-5">
-      <BreadcrumbTrail />
+      <BreadcrumbTrail dark={false} />
 
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="sm" className="gap-1 text-gray-500 hover:text-[#1e3a5f] rounded-xl">

@@ -32,16 +32,23 @@ export default function Footer() {
   return (
     <footer className="relative overflow-hidden">
       {/* Trust bar */}
-      <div className="bg-white border-t border-border-default/50">
-        <div className="container mx-auto px-4 py-5">
+      <div className="bg-white border-t border-slate-100">
+        <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {TRUST_ITEMS.map((item) => (
-              <div key={item.label} className="flex items-center gap-3 justify-center md:justify-start">
-                <div className="w-10 h-10 rounded-xl bg-navy/5 flex items-center justify-center shrink-0">
-                  <item.icon className="w-5 h-5 text-navy" />
+            {TRUST_ITEMS.map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+                className="flex items-center gap-3 justify-center md:justify-start group"
+              >
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-navy/5 to-teal/5 flex items-center justify-center shrink-0 group-hover:from-navy/10 group-hover:to-teal/10 transition-all duration-300">
+                  <item.icon className="w-5 h-5 text-navy group-hover:text-teal transition-colors duration-300" />
                 </div>
-                <span className="text-sm font-medium text-text-secondary">{item.label}</span>
-              </div>
+                <span className="text-sm font-medium text-text-secondary group-hover:text-navy transition-colors duration-300">{item.label}</span>
+              </motion.div>
             ))}
           </div>
         </div>

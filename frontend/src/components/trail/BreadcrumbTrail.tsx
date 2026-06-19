@@ -1,70 +1,138 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useUserTrailStore } from '@/lib/store/user-trail';
+import { Home } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
-export default function BreadcrumbTrail() {
+interface BreadcrumbTrailProps {
+  className?: string;
+  dark?: boolean;
+}
+
+export default function BreadcrumbTrail({ className, dark }: BreadcrumbTrailProps) {
   const getHistory = useUserTrailStore((s) => s.getHistory);
   const history = getHistory();
 
   if (history.length === 0) return null;
 
-  const steps = history.slice(-5);
+  const steps = history.slice(-4);
+  const isDark = dark !== false;
 
   return (
-    <motion.nav
+    <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="flex items-center gap-0"
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={cn(
+        'inline-flex items-center rounded-2xl px-1 py-1',
+        isDark
+          ? 'bg-white/[0.06] border border-white/[0.1] backdrop-blur-md'
+          : 'bg-white border border-slate-200/70 shadow-sm',
+        className,
+      )}
     >
-      {steps.map((step, i) => {
-        const isLast = i === steps.length - 1;
-        return (
-          <div key={step.path} className="flex items-center">
-            {i > 0 && (
-              <svg width="32" height="12" className="mx-1 flex-shrink-0">
-                <line
-                  x1="0"
-                  y1="6"
-                  x2="32"
-                  y2="6"
-                  stroke="#374151"
-                  strokeWidth="2"
-                  strokeDasharray="4 3"
-                />
-              </svg>
-            )}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-1.5"
-            >
-              <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-                {isLast ? (
-                  <>
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#3b82f6] opacity-60" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#3b82f6]" />
-                  </>
-                ) : (
-                  <>
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#10b981] opacity-50" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#10b981]" />
-                  </>
-                )}
-              </span>
-              <span
-                className={`text-xs whitespace-nowrap ${
-                  isLast ? 'text-white font-semibold' : 'text-gray-400'
-                }`}
+      <Breadcrumb>
+        <BreadcrumbList className="gap-0">
+          {steps.map((step, i) => {
+            const isFirst = i === 0;
+            const isLast = i === steps.length - 1;
+
+            return (
+              <motion.div
+                key={step.path}
+                className="contents"
+                initial={{ opacity: 0, x: 6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.08, duration: 0.35 }}
               >
-                {step.label}
-              </span>
-            </motion.div>
-          </div>
-        );
-      })}
-    </motion.nav>
+                {i > 0 && (
+                  <BreadcrumbSeparator className="mx-0.5">
+                    <ChevronLeft
+                      className={cn(
+                        isDark ? 'text-white/15' : 'text-slate-300',
+                      )}
+                    />
+                  </BreadcrumbSeparator>
+                )}
+
+                <BreadcrumbItem>
+                  {isLast ? (
+                    <BreadcrumbPage
+                      className={cn(
+                        'relative flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl',
+                        isDark
+                          ? 'text-white bg-white/[0.1]'
+                          : 'text-[#1e3a5f] bg-[#10b981]/[0.08]',
+                      )}
+                    >
+                      {isFirst && <Home className="w-3.5 h-3.5" />}
+                      <span>{step.label}</span>
+                      {isDark && (
+                        <motion.span
+                          className="absolute inset-0 rounded-xl bg-[#10b981]/10"
+                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink
+                      asChild
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl transition-all duration-200',
+                        isDark
+                          ? 'text-white/40 hover:text-white/90 hover:bg-white/[0.06]'
+                          : 'text-slate-400 hover:text-[#10b981] hover:bg-slate-50',
+                      )}
+                    >
+                      <Link href={step.path}>
+                        {isFirst && (
+                          <Home
+                            className={cn(
+                              'w-3.5 h-3.5',
+                              isDark ? 'text-white/25' : 'text-slate-300',
+                            )}
+                          />
+                        )}
+                        {step.label}
+                      </Link>
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </motion.div>
+            );
+          })}
+        </BreadcrumbList>
+      </Breadcrumb>
+    </motion.div>
+  );
+}
+
+function ChevronLeft({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
   );
 }

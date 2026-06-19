@@ -6,7 +6,7 @@
       "type": "django",
       "path": "./backend",
       "build": {
-        "command": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+        "command": "pip install -r requirements.txt"
       },
       "start": {
         "command": "/entrypoint.sh"

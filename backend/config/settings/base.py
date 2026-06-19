@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "payment",
     "blog",
     "admin_panel",
+    "chatbot",
 ]
 
 MIDDLEWARE = [
@@ -105,11 +106,11 @@ USE_TZ = True
 # ---------------------------------------------------------------------------
 # Static & Media
 # ---------------------------------------------------------------------------
-STATIC_URL = "/public/static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "public" / "static"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "/public/media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "public" / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -159,7 +160,7 @@ AZ_IRANIAN_BANK_GATEWAYS = {
 }
 PAYMENT_CALLBACK_BASE_URL = env("PAYMENT_CALLBACK_BASE_URL", default="http://127.0.0.1:8000/api/payment/callback")
 # آدرس فرانت‌اند — برای ریدایرکت بعد از callback پرداخت
-FRONTEND_BASE_URL = env("FRONTEND_BASE_URL", default="http://localhost:5173")
+FRONTEND_BASE_URL = env("FRONTEND_BASE_URL", default="http://localhost:3000")
 
 # ---------------------------------------------------------------------------
 # CORS

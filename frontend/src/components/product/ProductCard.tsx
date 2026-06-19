@@ -82,8 +82,8 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
         ref={cardRef}
         onMouseMove={handleMouseMove}
         className={cn(
-          'card-spotlight bg-white border border-slate-100 rounded-2xl overflow-hidden h-full',
-          'hover:-translate-y-1 hover:shadow-[var(--shadow-hover)] hover:border-slate-200 transition-all duration-300',
+          'card-modern bg-white border border-slate-100/80 rounded-2xl overflow-hidden h-full',
+          'hover:border-slate-200/80',
           isOutOfStock && 'opacity-80'
         )}
       >

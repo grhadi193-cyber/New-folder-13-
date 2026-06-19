@@ -19,12 +19,18 @@ services:
       - 8000
     env:
       - DJANGO_SETTINGS_MODULE=config.settings.production
-      - SECRET_KEY=django-insecure-k8$2m#xq!v@9n^p&3w*r7j+5h=2f!g6u4i1o0a9s8d7f6g5h4j3k2l1z0x9c8v7b6n5m4
-      - DATABASE_URL=postgresql://postgres:xXmTsf7AnLBjo4tW4Jfl@farzamsql-trv-service:5432/farzamsqevi_db
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=${DATABASE_URL}
       - DEBUG=False
-      - ALLOWED_HOSTS=farzamback-farazmgps.runflare.run,localhost,127.0.0.1
+      - ALLOWED_HOSTS=farzamback-farazmgps.runflare.run
+      - CORS_ALLOW_ALL_ORIGINS=False
       - CORS_ALLOWED_ORIGINS=https://farazmgps.runflare.run
       - CSRF_TRUSTED_ORIGINS=https://farzamback-farazmgps.runflare.run,https://farazmgps.runflare.run
+      - FRONTEND_BASE_URL=https://farazmgps.runflare.run
+      - PAYMENT_CALLBACK_BASE_URL=https://farzamback-farazmgps.runflare.run/api/payment/callback
+      - PAYMENT_SANDBOX=True
+      - ZARINPAL_MERCHANT_CODE=sandbox
+      - OTP_EXPIRY_MINUTES=2
     disk:
       - name: media
         path: /app/media
@@ -48,6 +54,7 @@ services:
     env:
       - NEXT_PUBLIC_API_URL=https://farzamback-farazmgps.runflare.run
       - NEXT_PUBLIC_SITE_URL=https://farazmgps.runflare.run
+      - INTERNAL_API_URL=http://backend:8000
 
 databases:
   - name: postgres

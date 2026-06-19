@@ -115,38 +115,47 @@ export default function HeroSlider({ banners }: HeroSliderProps) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* White background with subtle dot pattern */}
+      {/* Mesh gradient background */}
+      <div className="absolute inset-0 mesh-gradient-1" />
       <div
         className="absolute inset-0"
         style={{
           backgroundColor: '#ffffff',
-          backgroundImage: 'radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0)',
-          backgroundSize: '28px 28px',
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(226,232,240,0.5) 1px, transparent 0)',
+          backgroundSize: '32px 32px',
         }}
       />
-      {/* Soft radial gradient overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 70% 60% at 50% -10%, rgba(30,58,95,0.06) 0%, transparent 65%)',
-        }}
+      {/* Animated gradient orbs */}
+      <motion.div
+        className="absolute top-20 right-1/4 w-96 h-96 bg-teal-500/[0.04] rounded-full blur-[100px]"
+        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute bottom-20 left-1/4 w-80 h-80 bg-navy/[0.04] rounded-full blur-[80px]"
+        animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       {/* Navigation arrows */}
-      <button
+      <motion.button
         onClick={prev}
-        className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-navy hover:border-navy/30 transition-all duration-200 z-20 shadow-sm hover:shadow-md"
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-white/80 backdrop-blur-sm border border-slate-200/60 flex items-center justify-center text-slate-500 hover:text-navy hover:border-navy/30 transition-all duration-300 z-20 shadow-sm hover:shadow-md"
         aria-label="قبلی"
       >
         <ChevronLeft className="w-4 h-4" />
-      </button>
-      <button
+      </motion.button>
+      <motion.button
         onClick={next}
-        className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-navy hover:border-navy/30 transition-all duration-200 z-20 shadow-sm hover:shadow-md"
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-white/80 backdrop-blur-sm border border-slate-200/60 flex items-center justify-center text-slate-500 hover:text-navy hover:border-navy/30 transition-all duration-300 z-20 shadow-sm hover:shadow-md"
         aria-label="بعدی"
       >
         <ChevronRight className="w-4 h-4" />
-      </button>
+      </motion.button>
 
       <motion.div
         className="relative container mx-auto px-6 md:px-14 z-10"

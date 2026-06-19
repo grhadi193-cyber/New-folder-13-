@@ -121,6 +121,15 @@ const config: Config = {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
         },
+        glow: {
+          '0%, 100%': { boxShadow: '0 0 15px rgba(16,185,129,0.2)' },
+          '50%': { boxShadow: '0 0 30px rgba(16,185,129,0.4)' },
+        },
+      },
+      boxShadow: {
+        'float': '0 20px 60px -15px rgba(0, 0, 0, 0.12)',
+        'neon': '0 0 20px rgba(16, 185, 129, 0.15), 0 0 60px rgba(16, 185, 129, 0.05)',
+        'neon-navy': '0 0 20px rgba(30, 58, 95, 0.15), 0 0 60px rgba(30, 58, 95, 0.05)',
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -134,6 +143,7 @@ const config: Config = {
         'shimmer': 'shimmer 1.5s ease-in-out infinite',
         'pulse-ring': 'pulse-ring 1.5s ease-out infinite',
         'marquee': 'marquee 30s linear infinite',
+        'glow': 'glow 2s ease-in-out infinite',
       },
     },
   },

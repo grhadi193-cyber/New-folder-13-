@@ -7,6 +7,7 @@ import LoginModal from '@/components/auth/LoginModal'
 import CartDrawer from '@/components/cart/CartDrawer'
 import FloatingActions from '@/components/layout/FloatingActions'
 import CmdKSearch from '@/components/layout/CmdKSearch'
+import ChatWidget from '@/components/chatbot/ChatWidget'
 
 const LenisProvider = dynamic(() => import('@/components/shared/LenisProvider'), { ssr: false })
 const CursorFollower = dynamic(() => import('@/components/layout/CursorFollower'), { ssr: false })
@@ -36,6 +37,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <LoginModal />
         <CartDrawer />
         <FloatingActions />
+        <ChatWidget />
         <CmdKSearch />
         <CursorFollower />
       </QueryClientProvider>

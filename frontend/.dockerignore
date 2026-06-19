@@ -3,3 +3,5 @@ node_modules
 .git
 *.md
 .env.local
+app/editor/
+node_modules/@puckeditor/

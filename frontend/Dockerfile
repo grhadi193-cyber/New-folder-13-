@@ -10,9 +10,11 @@ COPY . .
 
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_SITE_URL
+ARG INTERNAL_API_URL
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://farzamback-farazmgps.runflare.run}
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://farazmgps.runflare.run}
+ENV INTERNAL_API_URL=${INTERNAL_API_URL:-http://backend:8000}
 
 RUN npm run build
 

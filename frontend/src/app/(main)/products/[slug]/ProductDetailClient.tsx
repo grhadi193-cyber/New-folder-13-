@@ -88,7 +88,7 @@ export default function ProductDetailClient({
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <BreadcrumbTrail />
+          <BreadcrumbTrail dark={false} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">

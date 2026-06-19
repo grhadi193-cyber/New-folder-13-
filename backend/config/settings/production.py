@@ -55,7 +55,7 @@ if _env_file.exists():
 # Media — persistent disk (Runflare mounts /app/media)
 # ---------------------------------------------------------------------------
 MEDIA_ROOT = "/app/media"
-MEDIA_URL = "/media/"
+MEDIA_URL = "/api/media/"
 STATIC_ROOT = "/app/public/static"
 
 # ---------------------------------------------------------------------------
