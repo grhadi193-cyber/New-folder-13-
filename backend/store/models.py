@@ -91,6 +91,75 @@ class ProductImage(models.Model):
         return f"Image#{self.pk} — {self.product.name}"
 
 
+# ── Product Feature ───────────────────────────────────────────────────────────
+
+class ProductFeature(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="features")
+    text    = models.CharField(max_length=500, verbose_name="متن ویژگی")
+    order   = models.PositiveSmallIntegerField(default=0, verbose_name="ترتیب")
+
+    class Meta:
+        ordering        = ["order"]
+        verbose_name    = "ویژگی محصول"
+        verbose_name_plural = "ویژگی‌های محصول"
+
+    def __str__(self):
+        return self.text[:60]
+
+
+# ── Product Specification ─────────────────────────────────────────────────────
+
+class ProductSpecification(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="specifications")
+    key     = models.CharField(max_length=200, verbose_name="عنوان")
+    value   = models.CharField(max_length=500, verbose_name="مقدار")
+    order   = models.PositiveSmallIntegerField(default=0, verbose_name="ترتیب")
+
+    class Meta:
+        ordering        = ["order"]
+        verbose_name    = "مشخصات فنی"
+        verbose_name_plural = "مشخصات فنی"
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+
+
+# ── Product FAQ ───────────────────────────────────────────────────────────────
+
+class ProductFAQ(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="faqs")
+    question = models.CharField(max_length=500, verbose_name="سوال")
+    answer   = models.TextField(verbose_name="پاسخ")
+    order    = models.PositiveSmallIntegerField(default=0, verbose_name="ترتیب")
+
+    class Meta:
+        ordering        = ["order"]
+        verbose_name    = "سوال متداول"
+        verbose_name_plural = "سوالات متداول"
+
+    def __str__(self):
+        return self.question[:60]
+
+
+# ── Product Review ────────────────────────────────────────────────────────────
+
+class ProductReview(models.Model):
+    product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews")
+    rating     = models.PositiveSmallIntegerField(default=5, verbose_name="امتیاز (۱ تا ۵)")
+    text       = models.TextField(verbose_name="متن نظر")
+    is_approved = models.BooleanField(default=False, verbose_name="تایید شده")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering        = ["-created_at"]
+        verbose_name    = "نظر کاربر"
+        verbose_name_plural = "نظرات کاربران"
+
+    def __str__(self):
+        return f"{self.user} — {self.product.name} ({self.rating}★)"
+
+
 # ── Order ─────────────────────────────────────────────────────────────────────
 
 class Order(models.Model):

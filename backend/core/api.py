@@ -17,6 +17,7 @@ class SiteSettingsOut(BaseModel):
     primary_color:    str
     maintenance_mode: bool
     shop_enabled:     bool
+    max_order_quantity: int = 20
     social_instagram: str
     social_telegram:  str
     support_phone:    str
@@ -107,6 +108,7 @@ def get_site_settings(request):
         primary_color    = s.primary_color,
         maintenance_mode = s.maintenance_mode,
         shop_enabled     = s.shop_enabled,
+        max_order_quantity = s.max_order_quantity,
         social_instagram = s.social_instagram,
         social_telegram  = s.social_telegram,
         support_phone    = s.support_phone,

@@ -40,13 +40,42 @@
   --ease-smooth: 300ms cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Layout */
-  --navbar-height: 64px;
+  --navbar-height: 72px;
+
+  /* Z-Index Scale */
+  --z-navbar: 300;
+  --z-mobile-menu-overlay: 400;
+  --z-mobile-menu-drawer: 500;
+  --z-dropdown: 550;
+  --z-cart-drawer-overlay: 600;
+  --z-cart-drawer: 700;
+  --z-login-modal-overlay: 600;
+  --z-login-modal: 700;
+  --z-dialog-overlay: 650;
+  --z-dialog-content: 660;
+  --z-select-content: 670;
+  --z-cmd-search-overlay: 800;
+  --z-cmd-search-content: 810;
+  --z-cursor: 100;
 
   /* shadcn overrides */
   --background: 0 0% 100%;
   --foreground: 222 47% 11%;
   --primary: 213 52% 24%;
   --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+  --input: 214 32% 91%;
   --border: 214 32% 91%;
   --ring: 160 84% 39%;
   --radius: 0.75rem;

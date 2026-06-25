@@ -1,14 +1,42 @@
 'use client'
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { MapPin } from 'lucide-react'
+import { MapPin, CheckCircle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import OtpForm from '@/components/auth/OtpForm'
 import PasswordForm from '@/components/auth/PasswordForm'
+import { useAuthStore } from '@/lib/store/auth'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 function LoginCard() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/'
+  const { token, user } = useAuthStore()
+
+  if (token && user) {
+    return (
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-lg border border-border-default p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-500" />
+          </div>
+          <h2 className="text-xl font-bold text-[#1e3a5f] mb-2">شما وارد شده‌اید</h2>
+          <p className="text-sm text-gray-400 mb-6">
+            {user.full_name || user.phone_number} — خوش آمدید
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button asChild className="bg-navy hover:bg-navy-dark text-white rounded-xl px-6">
+              <Link href={redirectTo !== '/' ? redirectTo : '/profile'}>ادامه</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl px-6">
+              <Link href="/">صفحه اصلی</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-md">

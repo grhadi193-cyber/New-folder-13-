@@ -101,7 +101,8 @@ export default function CmdKSearch() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[800] bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            style={{ zIndex: 'var(--z-cmd-search-overlay)' }}
             onClick={() => setOpen(false)}
           />
           <motion.div
@@ -109,7 +110,8 @@ export default function CmdKSearch() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-[15vh] left-1/2 -translate-x-1/2 z-[900] w-full max-w-lg"
+            className="fixed top-[15vh] left-1/2 -translate-x-1/2 w-full max-w-lg"
+            style={{ zIndex: 'var(--z-cmd-search-content)' }}
           >
             <div className="bg-white rounded-2xl shadow-2xl border border-border-default/30 overflow-hidden mx-4">
               {/* Search input */}

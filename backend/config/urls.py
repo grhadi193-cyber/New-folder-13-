@@ -44,12 +44,16 @@ def serve_media(request, path):
     raise Http404
 
 
+from azbankgateways.urls import az_bank_gateways_urls
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health", health_check),
     re_path(r"^api/media/(?P<path>.+)$", serve_media),
     path("api/", api.urls),
     path("chatbot/", include("chatbot.urls")),
+    # azbankgateways library callback
+    path("bankgateways/", az_bank_gateways_urls()),
     # serve media in both dev and production
     re_path(r"^media/(?P<path>.+)$", serve_media),
 ]

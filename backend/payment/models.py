@@ -31,6 +31,7 @@ class PaymentGatewaySettings(models.Model):
     """
     MODE_CHOICES = [
         ("sandbox", "حالت سندباکس (پرداخت شبیه‌سازی شده)"),
+        ("zarinpal_sandbox", "سندباکس زرین‌پال (پرداخت شبیه‌سازی شده از طریق زرین‌پال)"),
         ("production", "حالت واقعی (پرداخت واقعی با زرین‌پال)"),
     ]
 
@@ -81,12 +82,16 @@ class PaymentGatewaySettings(models.Model):
         return self.mode == "sandbox"
 
     @property
+    def is_zarinpal_sandbox_mode(self) -> bool:
+        return self.mode == "zarinpal_sandbox"
+
+    @property
     def is_production_mode(self) -> bool:
         return self.mode == "production"
 
     def get_merchant_code(self) -> str:
         """برگرداندن کد مرچنت مناسب بر اساس حالت."""
-        if self.is_sandbox_mode:
+        if self.is_sandbox_mode or self.is_zarinpal_sandbox_mode:
             return "sandbox"
         return self.zarinpal_merchant_code or "sandbox"
 

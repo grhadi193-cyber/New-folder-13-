@@ -41,7 +41,8 @@ export default function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[600] bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            style={{ zIndex: 'var(--z-cart-drawer-overlay)' }}
             onClick={closeDrawer}
           />
           <motion.div
@@ -49,7 +50,8 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 left-0 bottom-0 z-[700] w-full max-w-md bg-white shadow-2xl flex flex-col"
+            className="fixed top-0 left-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col"
+            style={{ zIndex: 'var(--z-cart-drawer)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -98,10 +100,9 @@ export default function CartDrawer() {
                     {items.map((item) => (
                       <motion.div
                         key={item.product_id}
-                        layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: -100, height: 0 }}
+                        exit={{ opacity: 0, x: 60, transition: { duration: 0.15 } }}
                         className="flex gap-3 p-3 rounded-xl bg-amber-50/30 border border-gray-100"
                       >
                         <div className="w-16 h-16 rounded-lg bg-white overflow-hidden shrink-0 border border-gray-100">
@@ -171,9 +172,10 @@ export default function CartDrawer() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">جمع سبد:</span>
                   <motion.span
-                    key={totalPrice()}
-                    initial={{ scale: 1.1 }}
-                    animate={{ scale: 1 }}
+                    key={Math.round(totalPrice())}
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
                     className="text-lg font-extrabold text-navy"
                   >
                     {formatPrice(totalPrice())}

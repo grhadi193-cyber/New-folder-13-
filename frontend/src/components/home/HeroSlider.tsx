@@ -161,7 +161,7 @@ export default function HeroSlider({ banners }: HeroSliderProps) {
         className="relative container mx-auto px-6 md:px-14 z-10"
         style={{ opacity: opacityFade }}
       >
-        <div className="min-h-screen flex items-center py-24">
+        <div className="h-full flex items-center py-24">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
@@ -178,7 +178,7 @@ export default function HeroSlider({ banners }: HeroSliderProps) {
                   initial={{ opacity: 0, y: -15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1, duration: 0.5 }}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium mb-5"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium mb-6 shadow-sm"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
                   سیگنال فعال — پوشش سراسری ایران
@@ -189,7 +189,7 @@ export default function HeroSlider({ banners }: HeroSliderProps) {
                   initial={{ opacity: 0, y: 25 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="text-4xl md:text-5xl font-extrabold text-navy leading-snug mb-6"
+                  className="text-4xl md:text-6xl font-black text-navy leading-tight mb-6"
                 >
                   <TypewriterText text={slide.title} delay={300} />
                 </motion.h1>
@@ -199,7 +199,7 @@ export default function HeroSlider({ banners }: HeroSliderProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.5 }}
-                    className="text-slate-500 text-lg leading-relaxed mb-10 max-w-lg"
+                    className="text-slate-500 text-lg md:text-xl leading-relaxed mb-10 max-w-lg"
                   >
                     {slide.subtitle}
                   </motion.p>
@@ -216,7 +216,7 @@ export default function HeroSlider({ banners }: HeroSliderProps) {
                     <Link href={slide.cta_link}>
                       <Button
                         size="lg"
-                        className="group/btn bg-navy hover:bg-navy-dark text-white font-semibold px-7 py-3 rounded-xl shadow-navy hover:shadow-lg transition-all duration-200"
+                        className="group/btn bg-gradient-to-l from-[#1e3a5f] to-[#2a5f8f] text-white font-bold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
                       >
                         <span className="flex items-center gap-2">
                           {slide.cta_text ?? 'مشاهده'}

@@ -115,7 +115,7 @@ export default function ProfilePage() {
                       نام و نام خانوادگی
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="علی محمدی" className="rounded-xl" {...field} />
+                      <Input placeholder="نام و نام خانوادگی" className="rounded-xl" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

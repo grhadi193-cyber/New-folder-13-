@@ -48,14 +48,6 @@ interface ProductDetailClientProps {
   similarProducts: any[]
 }
 
-const DEFAULT_FEATURES = [
-  'ردیابی آنی با دقت بالا',
-  'پشتیبانی از شبکه‌های ۲G/۳G/۴G',
-  'عمر باتری طولانی',
-  'ضدآب و مقاوم در برابر ضربه',
-  'نصب آسان و سریع',
-]
-
 export default function ProductDetailClient({
   product,
   images,
@@ -71,7 +63,7 @@ export default function ProductDetailClient({
   const discountPercent = hasDiscount
     ? Math.round((1 - product.price / product.compare_price!) * 100)
     : 0
-  const features: string[] = product.features ?? DEFAULT_FEATURES
+  const features: string[] = product.features ?? []
   const specs: Record<string, string> = product.specifications ?? {}
   const faqs = product.faqs ?? []
 
@@ -92,11 +84,11 @@ export default function ProductDetailClient({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div className="order-2 lg:order-1">
+          <div className="order-1">
             <ImageSlider images={images} productName={product.name} />
           </div>
 
-          <div className="order-1 lg:order-2 flex flex-col gap-5">
+          <div className="order-2 flex flex-col gap-5">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-2">
                 {product.name}
@@ -118,7 +110,7 @@ export default function ProductDetailClient({
               </span>
             </div>
 
-            <div className="bg-navy/5 rounded-2xl p-5 border border-navy/10 shadow-sm">
+            <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
               <div className="flex items-center gap-3 flex-wrap">
                 <span
                   className={cn(
@@ -166,7 +158,7 @@ export default function ProductDetailClient({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="bg-red-50 rounded-2xl p-5 border border-red-200 shadow-md"
+                className="bg-red-50 rounded-2xl p-5 border border-red-100"
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Bell className="w-5 h-5 text-red-500" />
@@ -230,7 +222,7 @@ export default function ProductDetailClient({
             </div>
 
             {(product.weight ?? 0) > 0 && (
-              <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4 space-y-2">
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Weight className="w-4 h-4 text-blue-600" />
                   <p className="text-xs font-semibold text-blue-700">اطلاعات وزن ارسال</p>
@@ -268,7 +260,7 @@ export default function ProductDetailClient({
                 <div
                   key={label}
                   className={cn(
-                    'flex flex-col items-center gap-1.5 rounded-2xl p-3 border border-gray-100 text-center shadow-md hover:shadow-xl transition-shadow',
+                    'flex flex-col items-center gap-1.5 rounded-2xl p-3 border border-slate-100 text-center',
                     bg
                   )}
                 >
@@ -291,6 +283,31 @@ export default function ProductDetailClient({
           <SimilarProducts products={similarProducts} />
         )}
       </div>
+
+      {/* Sticky Add to Cart — موبایل */}
+      {!isOutOfStock && (
+        <div className="fixed bottom-0 right-0 left-0 z-[200] lg:hidden bg-white/95 backdrop-blur-sm border-t border-gray-100 p-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          <div className="flex items-center gap-3">
+            <QuantitySelector
+              value={quantity}
+              onChange={setQuantity}
+              min={1}
+              max={maxQty}
+            />
+            <div className="flex-1">
+              <AddToCartButton
+                product={product}
+                quantity={quantity}
+                imageUrl={images[0]}
+                inStock={!isOutOfStock}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* فاصله پایین صفحه تا محتوا زیر sticky bar نره */}
+      {!isOutOfStock && <div className="h-24 lg:hidden" />}
     </div>
   )
 }

@@ -15,19 +15,18 @@ logger = logging.getLogger(__name__)
 def get_provider(name: str):
     """
     Get payment provider based on current settings (from Django Admin).
-    Returns MockProvider in sandbox mode, ZarinpalProvider in production.
+    Returns MockProvider in sandbox mode, ZarinpalProvider in production or zarinpal_sandbox.
     """
     try:
         gateway_settings = PaymentGatewaySettings.get()
         if gateway_settings.is_sandbox_mode:
             return MockProvider()
+        # zarinpal_sandbox and production both use the real ZarinpalProvider
     except Exception:
         # If table doesn't exist yet (first migration), fall back to settings.DEBUG
         if getattr(settings, "DEBUG", True):
             return MockProvider()
 
-    if name == "zarinpal":
-        return ZarinpalProvider()
     return ZarinpalProvider()
 
 
@@ -89,7 +88,8 @@ def verify_payment(transaction_id: int, raw_params: dict) -> bool:
     if txn.status == Transaction.Status.FAILED:
         return False
 
-    # در حالت سندباکس با auto_verify=True، تراکنش خودکار تایید شود
+    # در حالت سندباکس (MockProvider) با auto_verify=True، تراکنش خودکار تایید شود
+    # zarinpal_sandbox از اینجا رد می‌شه چون تأیید واقعی از طریق زرین‌پال انجام می‌شه
     try:
         gateway_settings = PaymentGatewaySettings.get()
         if gateway_settings.is_sandbox_mode and gateway_settings.auto_verify:

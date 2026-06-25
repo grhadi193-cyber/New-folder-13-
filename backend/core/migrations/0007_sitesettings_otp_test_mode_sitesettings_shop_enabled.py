@@ -4,14 +4,20 @@ from django.db import migrations, models
 
 
 def add_fields_if_not_exist(apps, schema_editor):
-    SiteSettings = apps.get_model("core", "SiteSettings")
-    table_name = SiteSettings._meta.db_table
-    columns = [col.name for col in schema_editor.connection.introspection.get_table_description(schema_editor.cursor, table_name)]
+    table_name = "core_sitesettings"
     with schema_editor.connection.cursor() as cursor:
+        columns = [
+            col.name
+            for col in schema_editor.connection.introspection.get_table_description(cursor, table_name)
+        ]
         if "otp_test_mode" not in columns:
-            schema_editor.add_field(SiteSettings, SiteSettings._meta.get_field("otp_test_mode"))
+            cursor.execute(
+                'ALTER TABLE "core_sitesettings" ADD COLUMN "otp_test_mode" boolean NOT NULL DEFAULT false'
+            )
         if "shop_enabled" not in columns:
-            schema_editor.add_field(SiteSettings, SiteSettings._meta.get_field("shop_enabled"))
+            cursor.execute(
+                'ALTER TABLE "core_sitesettings" ADD COLUMN "shop_enabled" boolean NOT NULL DEFAULT true'
+            )
 
 
 class Migration(migrations.Migration):

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -20,14 +20,37 @@ export default function ImageSlider({ images, productName }: ImageSliderProps) {
   const validImages = images.filter(isValidSrc)
   const safeImages = validImages.length > 0 ? validImages : [PLACEHOLDER]
   const [activeIndex, setActiveIndex] = useState(0)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
 
   const goNext = () => setActiveIndex((prev) => (prev + 1) % safeImages.length)
   const goPrev = () => setActiveIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length)
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goNext()
+      else goPrev()
+    }
+  }
+
   return (
     <div className="flex flex-col gap-3 select-none">
       {/* Main image */}
-      <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-gray-100 bg-white">
+      <div
+        className="relative w-full aspect-square rounded-2xl overflow-hidden border border-gray-100 bg-white"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <Image
           src={safeImages[activeIndex]}
           alt={`${productName} — تصویر ${activeIndex + 1}`}

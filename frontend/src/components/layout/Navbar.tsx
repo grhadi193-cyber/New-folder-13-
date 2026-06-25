@@ -94,11 +94,12 @@ export default function Navbar({ logoUrl }: NavbarProps = {}) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          'sticky top-0 z-[300] transition-all duration-500',
+          'sticky top-0 transition-all duration-300',
           scrolled
-            ? 'bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-[0_1px_30px_rgba(0,0,0,0.06)]'
-            : 'bg-white/95 backdrop-blur-sm'
+            ? 'bg-white shadow-[0_1px_0_0_rgba(226,232,240,0.8)]'
+            : 'bg-white'
         )}
+        style={{ zIndex: 'var(--z-navbar)' }}
       >
         {/* Gradient accent line */}
         <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-l from-[#10b981] via-[#1e3a5f] to-[#f59e0b]" />
@@ -163,7 +164,7 @@ export default function Navbar({ logoUrl }: NavbarProps = {}) {
                     {isActive && (
                       <motion.div
                         layoutId="nav-active"
-                        className="absolute inset-0 bg-slate-100/80 rounded-xl"
+                        className="absolute inset-0 bg-[#10b981]/8 rounded-xl border border-[#10b981]/15"
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}

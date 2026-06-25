@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -48,10 +49,12 @@ export default function BlogCard({ post, className }: BlogCardProps) {
       >
         <div className="relative aspect-[16/9] bg-bg-secondary overflow-hidden">
           {coverSrc ? (
-            <img
+            <Image
               src={coverSrc}
               alt={post.title}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-navy/10 to-teal/10 flex items-center justify-center">

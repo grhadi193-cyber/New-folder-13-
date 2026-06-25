@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # third-party
     "ninja",
     "corsheaders",
+    "azbankgateways",
     # project apps
     "core",
     "sms",
@@ -107,11 +108,11 @@ USE_TZ = True
 # Static & Media
 # ---------------------------------------------------------------------------
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "public" / "static"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "public" / "media"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -149,7 +150,7 @@ SMS_SENDER = env("SMS_SENDER", default="")
 # Payment gateway
 # ---------------------------------------------------------------------------
 AZ_IRANIAN_BANK_GATEWAYS = {
-    "BANKS": {
+    "GATEWAYS": {
         "ZARINPAL": {
             "MERCHANT_CODE": env("ZARINPAL_MERCHANT_CODE", default="SANDBOX"),
             "SANDBOX": env.bool("PAYMENT_SANDBOX", default=True),

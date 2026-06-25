@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Phone, Shield, CheckCircle, User, ArrowRight, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { OtpInput6 } from '@/components/auth/OtpInput6'
+import OtpInput from '@/components/auth/OtpInput'
 import { useLoginModal } from '@/lib/store/login-modal'
 import { useAuthStore } from '@/lib/store/auth'
 import { sendOtp, verifyOtp, getProfile, updateProfile } from '@/lib/api/django'
@@ -182,7 +182,8 @@ export default function LoginModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[600] bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            style={{ zIndex: 'var(--z-login-modal-overlay)' }}
             onClick={closeLogin}
           />
           <motion.div
@@ -190,7 +191,8 @@ export default function LoginModal() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 bottom-0 z-[700] w-full max-w-md bg-white shadow-2xl flex flex-col overflow-hidden"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col overflow-hidden"
+            style={{ zIndex: 'var(--z-login-modal)' }}
             onKeyDown={handleKeyDown}
           >
             {/* Gradient header */}
@@ -357,7 +359,7 @@ export default function LoginModal() {
                       </div>
                     )}
 
-                    <OtpInput6 value={otp} onChange={setOtp} disabled={verifyLoading} />
+                    <OtpInput value={otp} onChange={setOtp} disabled={verifyLoading} />
 
                     {/* Timer */}
                     <div className="flex justify-center">
@@ -426,7 +428,7 @@ export default function LoginModal() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="مثال: علی محمدی"
+                      placeholder="نام و نام خانوادگی"
                       className="h-12 text-base rounded-xl border-border-default/50 focus:border-navy/30 focus:ring-navy/10"
                       autoFocus
                     />
@@ -495,6 +497,11 @@ export default function LoginModal() {
                       className="text-sm text-text-secondary"
                     >
                       خوش آمدید
+                      {returnUrl && (
+                        <span className="block text-xs text-text-tertiary mt-1">
+                          در حال انتقال...
+                        </span>
+                      )}
                     </motion.p>
                   </motion.div>
                 )}

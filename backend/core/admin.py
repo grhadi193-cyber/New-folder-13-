@@ -27,7 +27,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             "fields": ("software_login_url", "software_description", "google_play_url", "app_store_url"),
         }),
         ("وضعیت سایت", {
-            "fields": ("maintenance_mode", "shop_enabled", "otp_test_mode"),
+            "fields": ("maintenance_mode", "shop_enabled", "max_order_quantity", "otp_test_mode"),
         }),
     )
 

@@ -1,19 +1,40 @@
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ati_farzam
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      SECRET_KEY: ${SECRET_KEY}
-      DEBUG: ${DEBUG:-False}
-      DATABASE_URL: ${DATABASE_URL}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-farzamback-farazmgps.runflare.run}
-      CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-False}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://farazmgps.runflare.run}
-      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://farzamback-farazmgps.runflare.run,https://farazmgps.runflare.run}
-      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-https://farazmgps.runflare.run}
-      PAYMENT_CALLBACK_BASE_URL: ${PAYMENT_CALLBACK_BASE_URL:-https://farzamback-farazmgps.runflare.run/api/payment/callback}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-local-dev-key-change-me}
+      DEBUG: ${DEBUG:-True}
+      USE_SSL: ${USE_SSL:-False}
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/ati_farzam
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-True}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:3000}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:3000}
+      PAYMENT_CALLBACK_BASE_URL: ${PAYMENT_CALLBACK_BASE_URL:-http://localhost:8000/api/payment/callback}
       PAYMENT_SANDBOX: ${PAYMENT_SANDBOX:-True}
       ZARINPAL_MERCHANT_CODE: ${ZARINPAL_MERCHANT_CODE:-sandbox}
       OTP_EXPIRY_MINUTES: ${OTP_EXPIRY_MINUTES:-2}
@@ -34,13 +55,13 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://farzamback-farazmgps.runflare.run}
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://farazmgps.runflare.run}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
         INTERNAL_API_URL: http://backend:8000
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://farzamback-farazmgps.runflare.run}
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://farazmgps.runflare.run}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
       INTERNAL_API_URL: http://backend:8000
     ports:
       - "3000:3000"
@@ -49,3 +70,4 @@ services:
 
 volumes:
   media:
+  pgdata:

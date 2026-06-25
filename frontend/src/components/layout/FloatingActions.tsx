@@ -45,7 +45,7 @@ export default function FloatingActions() {
         transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.5 }}
         whileHover={{ scale: 1.1, y: -2 }}
         whileTap={{ scale: 0.9 }}
-        className="relative w-12 h-12 rounded-full bg-success text-white flex items-center justify-center shadow-[var(--shadow-lg)] animate-breathe"
+        className="hidden sm:flex relative w-12 h-12 rounded-full bg-success text-white items-center justify-center shadow-[var(--shadow-lg)] animate-breathe"
         aria-label="واتساپ"
       >
         <MessageCircle className="w-5 h-5" />

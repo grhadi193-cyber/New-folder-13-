@@ -87,43 +87,46 @@ def initiate_payment(request, payload: InitiatePaymentIn):
 def payment_callback(request, params: Query[VerifyCallbackIn]):
     """
     Gateway redirect endpoint.
-    Accepts Zarinpal-style ?Authority=...&Status=OK&transaction_id=...
-
-    پس از تأیید پرداخت، کاربر به صفحه نتیجه پرداخت در فرانت‌اند redirect می‌شود.
+    After azbankgateways verifies payment, it redirects here with ?tc=<tracking_code>&transaction_id=...&cb_token=...
+    Also handles legacy sandbox flow with ?Authority=SANDBOX_...&Status=OK
     """
     frontend_base = _get_frontend_base_url()
-
-    # ── Security check: sandbox requests skip signature check ──
-    authority = request.GET.get("Authority", "")
-    is_sandbox = authority.startswith("SANDBOX_")
-
-    if not is_sandbox and not _verify_gateway_signature(request):
-        logger.warning("Invalid or missing gateway signature — possible spoofing attempt")
-        redirect_url = f"{frontend_base}/payment-result?status=failed&reason=invalid_signature"
-        return HttpResponseRedirect(redirect_url)
-
     raw = dict(request.GET)
     raw_flat = {k: v[0] if isinstance(v, list) and len(v) == 1 else v for k, v in raw.items()}
 
+    # ── Determine transaction_id ──
     transaction_id = params.transaction_id
-    if not transaction_id:
-        if authority and authority.startswith("SANDBOX_"):
-            try:
-                transaction_id = int(authority.split("_")[1])
-            except (IndexError, ValueError):
-                redirect_url = f"{frontend_base}/payment-result?status=failed&reason=invalid_authority"
-                return HttpResponseRedirect(redirect_url)
-        else:
+
+    # Try to find transaction via azbankgateways tracking code
+    if not transaction_id and params.tc:
+        from azbankgateways.models import Bank
+        try:
+            bank_record = Bank.objects.get(tracking_code=params.tc)
             from .models import Transaction
-            txn = Transaction.objects.filter(ref_id=authority, status="pending").first()
-            if txn is None:
-                redirect_url = f"{frontend_base}/payment-result?status=failed&reason=not_found"
-                return HttpResponseRedirect(redirect_url)
-            transaction_id = txn.pk
+            txn = Transaction.objects.filter(
+                ref_id=bank_record.reference_number,
+                status="pending",
+            ).order_by("-created_at").first()
+            if txn:
+                transaction_id = txn.pk
+        except Exception:
+            pass
+
+    # Sandbox fallback: extract from Authority
+    authority = params.Authority
+    if not transaction_id and authority and authority.startswith("SANDBOX_"):
+        try:
+            transaction_id = int(authority.split("_")[1])
+        except (IndexError, ValueError):
+            redirect_url = f"{frontend_base}/payment-result?status=failed&reason=invalid_authority"
+            return HttpResponseRedirect(redirect_url)
+
+    if not transaction_id:
+        redirect_url = f"{frontend_base}/payment-result?status=failed&reason=not_found"
+        return HttpResponseRedirect(redirect_url)
 
     success = verify_payment(transaction_id, raw_flat)
 
-    # تعیین order_id برای نمایش در صفحه نتیجه
     order_id = ""
     try:
         from .models import Transaction

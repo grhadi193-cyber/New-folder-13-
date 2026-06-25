@@ -33,15 +33,16 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
   const [imgLoaded, setImgLoaded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const addItem = useCartStore((s) => s.addItem)
-  const { shopEnabled, supportPhone } = useShopStatus()
+  const { shopEnabled, supportPhone, maxOrderQuantity } = useShopStatus()
 
   const isOutOfStock = product.in_stock === false || product.stock === 0
   const hasDiscount = product.compare_price && product.compare_price > product.price
   const discountPercent = hasDiscount
     ? Math.round((1 - product.price / product.compare_price!) * 100)
     : 0
-  const rating = product.rating ?? 4.5
+  const rating = product.rating ?? 0
   const reviewCount = product.review_count ?? 0
+  const hasRating = rating > 0
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!cardRef.current) return
@@ -58,13 +59,17 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
       toast.error('این محصول در حال حاضر موجود نیست')
       return
     }
-    addItem({
+    const ok = addItem({
       product_id: String(product.id),
       name: product.name,
       price: product.price,
       imageUrl: imageUrl || '',
       quantity: 1,
-    })
+    }, maxOrderQuantity)
+    if (!ok) {
+      toast.error(`حداکثر ${maxOrderQuantity} عدد محصول می‌توانید سفارش دهید`)
+      return
+    }
     fireAddToCartConfetti()
     toast.success('به سبد خرید اضافه شد ✓')
   }
@@ -131,11 +136,6 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
                 {discountPercent}٪ تخفیف
               </Badge>
             )}
-            {!isOutOfStock && !hasDiscount && (
-              <Badge className="bg-teal-50 text-teal-700 border border-teal-200 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                جدید
-              </Badge>
-            )}
           </div>
 
           {/* Wishlist button */}
@@ -151,24 +151,26 @@ export default function ProductCard({ product, imageUrl, variant = 'grid' }: Pro
 
         <CardContent className="p-4 space-y-2">
           {/* Rating */}
-          <div className="flex items-center gap-1.5">
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={cn(
-                    'w-3 h-3',
-                    star <= rating
-                      ? 'text-amber-400 fill-amber-400'
-                      : 'text-slate-200 fill-slate-100'
-                  )}
-                />
-              ))}
+          {hasRating && (
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={cn(
+                      'w-3 h-3',
+                      star <= rating
+                        ? 'text-amber-400 fill-amber-400'
+                        : 'text-slate-200 fill-slate-100'
+                    )}
+                  />
+                ))}
+              </div>
+              {reviewCount > 0 && (
+                <span className="text-xs text-slate-400">({reviewCount})</span>
+              )}
             </div>
-            {reviewCount > 0 && (
-              <span className="text-xs text-slate-400">({reviewCount})</span>
-            )}
-          </div>
+          )}
 
           {/* Title */}
           <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-navy transition-colors duration-200">

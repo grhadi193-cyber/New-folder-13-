@@ -9,7 +9,7 @@ class ChatbotConfig(models.Model):
         help_text="کلید API پلتفرم میمو (Mimo Platform)",
     )
     api_base_url = models.URLField(
-        default="https://api.mimo.org/v1",
+        default="https://api.xiaomimimo.com/v1",
         verbose_name="آدرس پایه API",
         help_text="آدرس پایه API میمو — بدون /chat/completions",
     )

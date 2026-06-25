@@ -10,15 +10,17 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   let logoUrl: string | null = null
   let shopEnabled = true
   let supportPhone = ''
+  let maxOrderQuantity = 20
   try {
     const settings = await getSettings()
     logoUrl = settings?.logo ? djangoImageUrl(settings.logo) : null
     shopEnabled = settings?.shop_enabled !== false
     supportPhone = settings?.support_phone ?? ''
+    maxOrderQuantity = settings?.max_order_quantity ?? 20
   } catch {}
 
   return (
-    <ShopStatusProvider shopEnabled={shopEnabled} supportPhone={supportPhone}>
+    <ShopStatusProvider shopEnabled={shopEnabled} supportPhone={supportPhone} maxOrderQuantity={maxOrderQuantity}>
       <ClientTrailWrapper>
         <Navbar logoUrl={logoUrl} />
         <main className="min-h-[calc(100vh-var(--navbar-height))]">

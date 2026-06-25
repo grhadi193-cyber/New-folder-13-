@@ -55,38 +55,47 @@ if _env_file.exists():
 # Media — persistent disk (Runflare mounts /app/media)
 # ---------------------------------------------------------------------------
 MEDIA_ROOT = "/app/media"
-MEDIA_URL = "/api/media/"
-STATIC_ROOT = "/app/public/static"
+MEDIA_URL = "/media/"
+STATIC_ROOT = "/app/staticfiles"
 
 # ---------------------------------------------------------------------------
 # Security
 # ---------------------------------------------------------------------------
 DEBUG = env.bool("DEBUG", default=False)
-SECRET_KEY = env("SECRET_KEY", default="django-insecure-fallback-key-change-me-in-production")
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["farzamback-farazmgps.runflare.run", "localhost", "127.0.0.1"])
+SECRET_KEY = env("SECRET_KEY")  # raises ImproperlyConfigured if missing — intentional
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["farzam.runflare.run", "localhost", "127.0.0.1"])
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+USE_X_FORWARDED_HOST = True
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
+
+USE_SSL = env.bool("USE_SSL", default=False)
+
+SESSION_COOKIE_SECURE = USE_SSL
+CSRF_COOKIE_SECURE = USE_SSL
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = 31536000 if USE_SSL else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = USE_SSL
+SECURE_HSTS_PRELOAD = USE_SSL
 
 # ---------------------------------------------------------------------------
 # Database (PostgreSQL required in production)
 # ---------------------------------------------------------------------------
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="postgres://postgres:postgres@localhost:5432/postgres"),
+    "default": env.db("DATABASE_URL"),  # raises ImproperlyConfigured if missing — intentional
 }
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
+DATABASES["default"].setdefault("OPTIONS", {})
+DATABASES["default"]["OPTIONS"]["connect_timeout"] = 10
 
 # ---------------------------------------------------------------------------
 # Static files — WhiteNoise
 # ---------------------------------------------------------------------------
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # ---------------------------------------------------------------------------
 # Email
@@ -103,7 +112,7 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 # Payment gateway — redefine in full (do NOT mutate the base dict)
 # ---------------------------------------------------------------------------
 AZ_IRANIAN_BANK_GATEWAYS = {
-    "BANKS": {
+    "GATEWAYS": {
         "ZARINPAL": {
             "MERCHANT_CODE": env("ZARINPAL_MERCHANT_CODE", default="sandbox"),
             "SANDBOX": env.bool("PAYMENT_SANDBOX", default=False),
@@ -118,22 +127,28 @@ AZ_IRANIAN_BANK_GATEWAYS = {
 # ---------------------------------------------------------------------------
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=False)
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[
-    "https://farazmgps.runflare.run",
+    "https://front-farzam.runflare.run",
 ])
 
 # ---------------------------------------------------------------------------
 # CSRF Trusted Origins
 # ---------------------------------------------------------------------------
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[
-    "https://farzamback-farazmgps.runflare.run",
-    "https://farazmgps.runflare.run",
+    "https://farzam.runflare.run",
+    "https://front-farzam.runflare.run",
 ])
 
 # ---------------------------------------------------------------------------
 # Logging — rotating files + console
 # ---------------------------------------------------------------------------
-LOG_DIR = str(BASE_DIR / "logs")
-os.makedirs(LOG_DIR, exist_ok=True)
+LOG_DIR = env("LOG_DIR", default="/app/logs")
+try:
+    os.makedirs(LOG_DIR, exist_ok=True)
+    _log_writable = os.access(LOG_DIR, os.W_OK)
+except OSError:
+    _log_writable = False
+
+_file_handlers = ["file", "error_file"] if _log_writable else []
 
 LOGGING = {
     "version": 1,
@@ -169,12 +184,12 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console"] + (["file"] if _log_writable else []),
         "level": "WARNING",
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "file", "error_file"],
+            "handlers": ["console"] + _file_handlers,
             "level": "WARNING",
             "propagate": False,
         },

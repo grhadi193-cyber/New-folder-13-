@@ -42,8 +42,8 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
   }, [open, onClose])
 
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    document.body.classList.toggle('menu-open', open)
+    return () => { document.body.classList.remove('menu-open') }
   }, [open])
 
   const handleCartClick = () => {
@@ -61,18 +61,20 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
       {/* Overlay */}
       <div
         className={cn(
-          'fixed inset-0 z-[400] bg-black/50 backdrop-blur-sm transition-all duration-300 lg:hidden',
+          'fixed inset-0 bg-black/50 backdrop-blur-sm transition-all duration-300 lg:hidden',
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
+        style={{ zIndex: 'var(--z-mobile-menu-overlay)' }}
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 right-0 bottom-0 z-[500] w-[300px] bg-white shadow-2xl transition-transform duration-400 ease-out lg:hidden flex flex-col',
+          'fixed top-0 right-0 bottom-0 w-[300px] bg-white shadow-2xl transition-transform duration-400 ease-out lg:hidden flex flex-col',
           open ? 'translate-x-0' : 'translate-x-full'
         )}
+        style={{ zIndex: 'var(--z-mobile-menu-drawer)' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border-default/50">

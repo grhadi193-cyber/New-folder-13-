@@ -7,21 +7,29 @@ ENV DJANGO_SETTINGS_MODULE=config.settings.production
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev && \
+    gcc libpq-dev curl && \
     rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN addgroup --system django && adduser --system --ingroup django django
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# collectstatic needs SECRET_KEY at build time for Django checks
-# Use a dummy key just for collectstatic; real key comes at runtime
-RUN SECRET_KEY=build-placeholder python manage.py collectstatic --noinput 2>/dev/null || true
+# Fix ownership
+RUN chown -R django:django /app
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Do NOT set USER here — entrypoint must run as root to fix disk permissions.
+# Gunicorn is executed as the 'django' user inside entrypoint.sh via su.
+
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/api/health || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -74,7 +74,7 @@ def get_product_by_id(product_id: int) -> Product:
         product = (
             Product.objects
             .select_related("category")
-            .prefetch_related("images")
+            .prefetch_related("images", "features", "specifications", "faqs", "reviews__user")
             .get(pk=product_id, is_active=True)
         )
     except Product.DoesNotExist:
@@ -99,7 +99,7 @@ def get_product_by_slug(slug: str) -> Product:
         product = (
             Product.objects
             .select_related("category")
-            .prefetch_related("images")
+            .prefetch_related("images", "features", "specifications", "faqs", "reviews__user")
             .get(slug=slug, is_active=True)
         )
     except Product.DoesNotExist:

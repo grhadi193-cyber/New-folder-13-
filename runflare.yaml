@@ -22,7 +22,8 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - DATABASE_URL=${DATABASE_URL}
       - DEBUG=False
-      - ALLOWED_HOSTS=farzamback-farazmgps.runflare.run
+      - USE_SSL=True
+      - ALLOWED_HOSTS=farzamback-farazmgps.runflare.run,localhost
       - CORS_ALLOW_ALL_ORIGINS=False
       - CORS_ALLOWED_ORIGINS=https://farazmgps.runflare.run
       - CSRF_TRUSTED_ORIGINS=https://farzamback-farazmgps.runflare.run,https://farazmgps.runflare.run
@@ -36,7 +37,7 @@ services:
         path: /app/media
         size: 5GB
       - name: static
-        path: /app/public/static
+        path: /app/staticfiles
         size: 1GB
 
   # Frontend Service (Next.js)
@@ -54,7 +55,6 @@ services:
     env:
       - NEXT_PUBLIC_API_URL=https://farzamback-farazmgps.runflare.run
       - NEXT_PUBLIC_SITE_URL=https://farazmgps.runflare.run
-      - INTERNAL_API_URL=http://backend:8000
 
 databases:
   - name: postgres

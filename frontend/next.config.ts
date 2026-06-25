@@ -12,8 +12,10 @@ const nextConfig: NextConfig = {
       { protocol: 'http', hostname: 'localhost', port: '8000' },
       { protocol: 'http', hostname: '127.0.0.1', port: '8000' },
       { protocol: 'http', hostname: 'backend', port: '8000' },
-      { protocol: 'https', hostname: 'farzamback-farazmgps.runflare.run' },
-      { protocol: 'https', hostname: 'farazmgps.runflare.run' },
+      { protocol: 'http', hostname: '0.0.0.0' },
+      { protocol: 'http', hostname: '95.38.161.104' },
+      { protocol: 'http', hostname: '95.38.161.205' },
+      { protocol: 'https', hostname: 'farzam.runflare.run' },
     ],
   },
   async rewrites() {

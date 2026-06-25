@@ -101,6 +101,35 @@ class ProductListOut(BaseModel):
 
 # ── Product Detail (public) ───────────────────────────────────────────────────
 
+class ProductFeatureOut(BaseModel):
+    text: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductSpecificationOut(BaseModel):
+    key: str
+    value: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductFAQOut(BaseModel):
+    question: str
+    answer: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductReviewOut(BaseModel):
+    name: str
+    rating: int
+    text: str
+    date: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProductDetailOut(BaseModel):
     id: int
     name: str
@@ -120,6 +149,10 @@ class ProductDetailOut(BaseModel):
     image: Optional[str] = None
     category: Optional[CategoryOut] = None
     images: List[ProductImageOut] = []
+    features: List[ProductFeatureOut] = []
+    specifications: List[ProductSpecificationOut] = []
+    faqs: List[ProductFAQOut] = []
+    reviews: List[ProductReviewOut] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -138,6 +171,54 @@ class ProductDetailOut(BaseModel):
         if hasattr(v, 'all'):
             return list(v.all())
         return v if isinstance(v, list) else []
+
+    @field_validator('features', mode='before')
+    @classmethod
+    def convert_features_to_list(cls, v):
+        if hasattr(v, 'all'):
+            return list(v.all())
+        return v if isinstance(v, list) else []
+
+    @field_validator('specifications', mode='before')
+    @classmethod
+    def convert_specifications_to_list(cls, v):
+        if hasattr(v, 'all'):
+            return list(v.all())
+        return v if isinstance(v, list) else []
+
+    @field_validator('faqs', mode='before')
+    @classmethod
+    def convert_faqs_to_list(cls, v):
+        if hasattr(v, 'all'):
+            return list(v.all())
+        return v if isinstance(v, list) else []
+
+    @field_validator('reviews', mode='before')
+    @classmethod
+    def convert_reviews_to_list(cls, v):
+        if hasattr(v, 'all'):
+            return [
+                ProductReviewOut(
+                    name=r.user.full_name or r.user.phone_number or "کاربر",
+                    rating=r.rating,
+                    text=r.text,
+                    date=r.created_at.strftime("%Y/%m/%d"),
+                )
+                for r in v.all() if r.is_approved
+            ]
+        return v if isinstance(v, list) else []
+
+    @computed_field
+    @property
+    def rating(self) -> float:
+        if not self.reviews:
+            return 0
+        return round(sum(r.rating for r in self.reviews) / len(self.reviews), 1)
+
+    @computed_field
+    @property
+    def review_count(self) -> int:
+        return len(self.reviews)
 
     @computed_field
     @property

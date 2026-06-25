@@ -16,5 +16,7 @@ class VerifyCallbackIn(BaseModel):
     Status:    str = ""
     # Generic fallback fields (other gateways)
     transaction_id: int = 0
+    # azbankgateways tracking code
+    tc: str = ""
     # توکن یک‌بارمصرف برای تأیید اصالت کالبک
     cb_token: str = ""

@@ -1,0 +1,29 @@
+service:
+  name: farzamback
+  type: docker
+  build:
+    command: pip install -r requirements.txt
+  start:
+    command: /entrypoint.sh
+  ports:
+    - 8000
+  env:
+    - DJANGO_SETTINGS_MODULE=config.settings.production
+    - DEBUG=False
+    - USE_SSL=True
+    - ALLOWED_HOSTS=*
+    - CORS_ALLOW_ALL_ORIGINS=False
+    - CORS_ALLOWED_ORIGINS=https://front-farzam.runflare.run
+    - CSRF_TRUSTED_ORIGINS=https://farzam.runflare.run,https://front-farzam.runflare.run
+    - FRONTEND_BASE_URL=https://front-farzam.runflare.run
+    - PAYMENT_CALLBACK_BASE_URL=https://farzam.runflare.run/api/payment/callback
+    - PAYMENT_SANDBOX=True
+    - ZARINPAL_MERCHANT_CODE=sandbox
+    - OTP_EXPIRY_MINUTES=2
+  disk:
+    - name: media
+      path: /app/media
+      size: 5GB
+    - name: static
+      path: /app/staticfiles
+      size: 1GB

@@ -18,15 +18,11 @@ export default function SimilarProducts({ products }: SimilarProductsProps) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product: any) => (
-          <div
+          <ProductCard
             key={product.id}
-            className="rounded-2xl shadow-md hover:shadow-xl transition-shadow"
-          >
-            <ProductCard
-              product={product}
-              imageUrl={product._imageUrl}
-            />
-          </div>
+            product={product}
+            imageUrl={product._imageUrl}
+          />
         ))}
       </div>
     </div>

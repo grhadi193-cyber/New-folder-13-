@@ -14,10 +14,11 @@ interface ConfirmStepProps {
   token: string
   address: any
   shippingMethod: any
+  customerName: string
   onBack: () => void
 }
 
-export default function ConfirmStep({ token, address, shippingMethod, onBack }: ConfirmStepProps) {
+export default function ConfirmStep({ token, address, shippingMethod, customerName, onBack }: ConfirmStepProps) {
   const router = useRouter()
   const { items, totalPrice } = useCartStore()
   const [loading, setLoading] = useState(false)
@@ -101,6 +102,19 @@ export default function ConfirmStep({ token, address, shippingMethod, onBack }: 
               </p>
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* Customer Name */}
+      <Card>
+        <CardContent className="p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#10b981]/10 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          </div>
+          <div>
+            <p className="font-semibold text-text-primary text-sm">نام سفارش‌دهنده</p>
+            <p className="text-text-secondary text-xs">{customerName}</p>
+          </div>
         </CardContent>
       </Card>
 

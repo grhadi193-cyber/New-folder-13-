@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, Order, OrderItem, OrderStatusHistory
+from .models import (
+    Category, Product, ProductImage, ProductFeature,
+    ProductSpecification, ProductFAQ, ProductReview,
+    Order, OrderItem, OrderStatusHistory,
+)
 
 
 # ── Category ──────────────────────────────────────────────────────────────────
@@ -22,6 +26,35 @@ class ProductImageInline(admin.TabularInline):
     ordering    = ("order",)
 
 
+class ProductFeatureInline(admin.TabularInline):
+    model    = ProductFeature
+    extra    = 1
+    fields   = ("text", "order")
+    ordering = ("order",)
+
+
+class ProductSpecificationInline(admin.TabularInline):
+    model    = ProductSpecification
+    extra    = 1
+    fields   = ("key", "value", "order")
+    ordering = ("order",)
+
+
+class ProductFAQInline(admin.StackedInline):
+    model    = ProductFAQ
+    extra    = 0
+    fields   = ("question", "answer", "order")
+    ordering = ("order",)
+
+
+class ProductReviewInline(admin.TabularInline):
+    model          = ProductReview
+    extra          = 0
+    fields         = ("user", "rating", "text", "is_approved", "created_at")
+    readonly_fields = ("created_at",)
+    ordering       = ("-created_at",)
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display    = ("id", "name", "slug", "price", "discount_price",
@@ -30,7 +63,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields   = ("name", "sku")
     prepopulated_fields = {"slug": ("name",)}
     readonly_fields = ("view_count", "created_at", "updated_at")
-    inlines         = [ProductImageInline]
+    inlines         = [ProductImageInline, ProductFeatureInline, ProductSpecificationInline, ProductFAQInline, ProductReviewInline]
     fieldsets = (
         ("اطلاعات اصلی", {
             "fields": ("category", "name", "slug", "description",

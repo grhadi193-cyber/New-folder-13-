@@ -22,7 +22,7 @@ interface AddToCartButtonProps {
 
 export default function AddToCartButton({ product, quantity, imageUrl, inStock = true }: AddToCartButtonProps) {
   const addItem = useCartStore((s) => s.addItem)
-  const { shopEnabled, supportPhone } = useShopStatus()
+  const { shopEnabled, supportPhone, maxOrderQuantity } = useShopStatus()
   const [added, setAdded] = useState(false)
 
   if (!shopEnabled) {
@@ -42,13 +42,21 @@ export default function AddToCartButton({ product, quantity, imageUrl, inStock =
       return
     }
 
-    addItem({
+    const ok = addItem({
       product_id: String(product.id),
       name: product.name,
       price: product.price,
       quantity,
       imageUrl,
-    })
+    }, maxOrderQuantity)
+
+    if (!ok) {
+      toast.error(`حداکثر ${maxOrderQuantity} عدد محصول می‌توانید سفارش دهید`, {
+        description: 'برای سفارش بیشتر با ما تماس بگیرید',
+        duration: 4000,
+      })
+      return
+    }
 
     setAdded(true)
     fireAddToCartConfetti()

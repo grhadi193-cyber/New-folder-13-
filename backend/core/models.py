@@ -9,6 +9,7 @@ class SiteSettings(models.Model):
     primary_color    = models.CharField(max_length=7, default="#01696f")
     maintenance_mode = models.BooleanField(default=False)
     shop_enabled     = models.BooleanField(default=True, verbose_name="فروشگاه فعال")
+    max_order_quantity = models.PositiveIntegerField(default=20, verbose_name="حداکثر تعداد محصول در هر سفارش")
     otp_test_mode    = models.BooleanField(default=False, verbose_name="حالت تست پیامک (نمایش کد در فرانت)")
     social_instagram = models.URLField(blank=True)
     social_telegram  = models.URLField(blank=True)

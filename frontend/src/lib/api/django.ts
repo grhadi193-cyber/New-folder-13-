@@ -7,15 +7,21 @@ function getBaseUrl(): string {
 
 const API_ORIGIN = getBaseUrl()
 
-const INTERNAL_RE = /http:\/\/(localhost|127\.0\.0\.1|backend):8000/g
+const INTERNAL_RE = /http:\/\/(localhost|127\.0\.0\.1|backend)(:\d+)?/g
 
 export function djangoImageUrl(url: string | null | undefined): string {
   if (!url) return ''
+  if (url.startsWith('/')) return url
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://farzam.runflare.run'
+  if (url.startsWith(backendUrl)) return url.replace(backendUrl, '')
   return url.replace(INTERNAL_RE, '')
 }
 
 export function publicImageUrl(url: string | null | undefined): string {
   if (!url) return ''
+  if (url.startsWith('/')) return url
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://farzam.runflare.run'
+  if (url.startsWith(backendUrl)) return url.replace(backendUrl, '')
   return url.replace(INTERNAL_RE, '')
 }
 

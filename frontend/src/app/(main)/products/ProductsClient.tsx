@@ -18,7 +18,6 @@ import ProductCard from '@/components/product/ProductCard'
 import { ProductSkeletonGrid } from '@/components/product/ProductSkeleton'
 import AfiPagination from '@/components/shared/Pagination'
 import { BreadcrumbTrail } from '@/components/trail'
-import { PulsingDot } from '@/components/tracking'
 import EmptyState from '@/components/shared/EmptyState'
 import { motion, AnimatePresence } from 'framer-motion'
 import { StaggerContainer, StaggerItem } from '@/components/shared/ScrollReveal'
@@ -84,6 +83,17 @@ export default function ProductsClient({
     return () => clearTimeout(t)
   }, [search])
 
+  const [debouncedPriceMin, setDebouncedPriceMin] = useState('')
+  const [debouncedPriceMax, setDebouncedPriceMax] = useState('')
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedPriceMin(priceMin), 500)
+    return () => clearTimeout(t)
+  }, [priceMin])
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedPriceMax(priceMax), 500)
+    return () => clearTimeout(t)
+  }, [priceMax])
+
   const isFirstRender = useRef(true)
 
   useEffect(() => {
@@ -102,8 +112,8 @@ export default function ProductsClient({
         params.set('page_size', String(PAGE_SIZE))
         if (activeCategory) params.set('category_id', activeCategory)
         if (debouncedSearch) params.set('search', debouncedSearch)
-        if (priceMin) params.set('price_min', priceMin)
-        if (priceMax) params.set('price_max', priceMax)
+        if (debouncedPriceMin) params.set('price_min', debouncedPriceMin)
+        if (debouncedPriceMax) params.set('price_max', debouncedPriceMax)
 
         const res = await fetch(`${API_URL}/api/products?${params}`, {
           signal: controller.signal,
@@ -143,7 +153,7 @@ export default function ProductsClient({
 
     fetchProducts()
     return () => controller.abort()
-  }, [page, activeCategory, debouncedSearch, priceMin, priceMax])
+  }, [page, activeCategory, debouncedSearch, debouncedPriceMin, debouncedPriceMax])
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -191,7 +201,7 @@ export default function ProductsClient({
       <div className="flex gap-6">
         {/* Sidebar - Desktop */}
         <aside className="hidden lg:block w-72 flex-shrink-0">
-          <div className="bg-white rounded-2xl shadow-md p-5 sticky top-24 space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 sticky top-24 space-y-6">
             {/* Search */}
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -293,7 +303,7 @@ export default function ProductsClient({
           <div className="lg:hidden mb-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white shadow-md text-sm font-medium text-[#1e3a5f] border border-gray-200 w-full justify-between"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-medium text-[#1e3a5f] w-full justify-between"
             >
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4" />
@@ -311,7 +321,7 @@ export default function ProductsClient({
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-white rounded-2xl shadow-md p-5 mt-3 space-y-5">
+                  <div className="bg-white rounded-2xl border border-slate-100 p-5 mt-3 space-y-5">
                     {/* Mobile Search */}
                     <div className="relative">
                       <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -411,7 +421,7 @@ export default function ProductsClient({
             <>
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={`${page}-${activeCategory}-${debouncedSearch}-${priceMin}-${priceMax}`}
+                  key={`${page}-${activeCategory}-${debouncedSearch}-${debouncedPriceMin}-${debouncedPriceMax}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -423,20 +433,10 @@ export default function ProductsClient({
                   >
                     {products.map((product) => (
                       <StaggerItem key={product.id}>
-                        <div className="relative">
-                          <ProductCard
-                            product={product}
-                            imageUrl={imageMap[String(product.id)]}
-                          />
-                          {/* Stock status indicator */}
-                          <div className="absolute top-3 left-3 z-10">
-                            {product.in_stock === false || product.stock === 0 ? (
-                              <PulsingDot color="red" size={5} />
-                            ) : (
-                              <PulsingDot color="green" size={5} />
-                            )}
-                          </div>
-                        </div>
+                        <ProductCard
+                          product={product}
+                          imageUrl={imageMap[String(product.id)]}
+                        />
                       </StaggerItem>
                     ))}
                   </StaggerContainer>
